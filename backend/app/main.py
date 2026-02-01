@@ -8,15 +8,25 @@ from app.services.market_data import market_data_service
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Initialize connections & Start Ingestion
-    task = asyncio.create_task(market_data_service.ingest_realtime_data())
+    await market_data_service.start()
     yield
     # Shutdown: Close connections
-    # task.cancel()
+    await market_data_service.stop()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan
+)
+
+# Set all CORS enabled origins
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -11,6 +11,28 @@ class MarketDataService:
     def __init__(self):
         self.active_streams = []
         self._running = False
+        self._ingestion_task = None
+
+    async def start(self):
+        if self._running:
+            return
+        logger.info("Starting Market Data Service...")
+        self._running = True
+        self._ingestion_task = asyncio.create_task(self.ingest_realtime_data())
+
+    async def stop(self):
+        if not self._running:
+            return
+        logger.info("Stopping Market Data Service...")
+        self._running = False
+        if self._ingestion_task:
+            self._ingestion_task.cancel()
+            try:
+                await self._ingestion_task
+            except asyncio.CancelledError:
+                pass
+            self._ingestion_task = None
+        self.active_streams = []
 
     async def start_kline_socket(self, symbol: str, interval: str, callback: Callable):
         """

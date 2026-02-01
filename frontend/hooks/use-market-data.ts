@@ -17,10 +17,29 @@ export interface LogData {
     type: 'info' | 'success' | 'dim' | 'error';
 }
 
-export const useMarketData = (symbol: string = "BTCUSDT") => {
+export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m") => {
     const [price, setPrice] = useState<number>(0);
     const [history, setHistory] = useState<TickData[]>([]);
     const [logs, setLogs] = useState<LogData[]>([]);
+
+    // 1. Fetch Initial History
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const res = await fetch(`http://localhost:8000/api/v1/market/history/${symbol}?interval=${interval}&limit=200`);
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    setHistory(data);
+                    if (data.length > 0) {
+                        setPrice(data[data.length - 1].price);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch history", e);
+            }
+        };
+        fetchHistory();
+    }, [symbol, interval]);
 
     const { lastJsonMessage, readyState } = useWebSocket(SOCKET_URL, {
         shouldReconnect: (closeEvent) => true,
@@ -37,7 +56,7 @@ export const useMarketData = (symbol: string = "BTCUSDT") => {
                 setPrice(tick.price);
                 setHistory((prev) => {
                     const newHistory = [...prev, tick];
-                    if (newHistory.length > 50) return newHistory.slice(1);
+                    if (newHistory.length > 200) return newHistory.slice(1);
                     return newHistory;
                 });
             }

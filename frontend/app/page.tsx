@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Activity,
   Play,
@@ -9,7 +9,6 @@ import {
   TrendingUp,
   Wallet,
   Settings,
-  Cpu,
   ArrowUpRight,
   Zap,
   MoreHorizontal
@@ -24,19 +23,16 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useMarketData } from "@/hooks/use-market-data";
-
-// Keep dummy data for non-functional parts
-const activeTrades = [
-  { id: 1, pair: 'BTC/USDT', type: 'LONG', entry: 64200, current: 65050, pnl: '+1.32%', status: 'OPEN' },
-  { id: 2, pair: 'ETH/USDT', type: 'SHORT', entry: 3200, current: 3180, pnl: '+0.62%', status: 'OPEN' },
-  { id: 3, pair: 'SOL/USDT', type: 'LONG', entry: 145.50, current: 144.20, pnl: '-0.89%', status: 'OPEN' },
-];
+import { useBotManager } from "@/hooks/use-bot-manager";
 
 export default function BotDashboard() {
-  const [isBotRunning, setIsBotRunning] = useState(true);
+  const [timeframe, setTimeframe] = useState("1m");
 
-  // Real-time Data Hook
-  const { price, history, logs, connectionStatus } = useMarketData("BTCUSDT");
+  // 1. Real-time Data Hook
+  const { price, history, logs, connectionStatus } = useMarketData("BTCUSDT", timeframe);
+
+  // 2. Bot Manager Hook (Global State)
+  const { isRunning, stats, balance, activeTrades, toggleBot } = useBotManager();
 
   return (
     <>
@@ -85,7 +81,9 @@ export default function BotDashboard() {
               <div className="text-right">
                 <p className="text-[12px] text-zinc-500 uppercase tracking-widest font-semibold mb-1">Total Balance</p>
                 {/* Menggunakan font-nums (JetBrains Mono) */}
-                <p className="font-nums font-bold text-3xl text-white tracking-tight">$12,450.00</p>
+                <p className="font-nums font-bold text-3xl text-white tracking-tight">
+                  ${balance?.total_balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "---"}
+                </p>
               </div>
               <button className="w-10 h-10 rounded-sm bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all relative">
                 <div className={`w-2 h-2 rounded-full absolute top-3 right-3 border border-[#09090b] ${connectionStatus === 'Open' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
@@ -115,8 +113,12 @@ export default function BotDashboard() {
                 </div>
 
                 <div className="bg-zinc-900 p-1 rounded-sm border border-zinc-800 flex">
-                  {['1H', '4H', '1D', '1W'].map((tf) => (
-                    <button key={tf} className={`px-4 py-1.5 text-sm font-medium rounded-sm transition-all ${tf === '1H' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                  {['1m', '15m', '1H', '4H', '1D'].map((tf) => (
+                    <button
+                      key={tf}
+                      onClick={() => setTimeframe(tf)}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-sm transition-all ${timeframe === tf ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    >
                       {tf}
                     </button>
                   ))}
@@ -180,9 +182,11 @@ export default function BotDashboard() {
                   <div>
                     <h3 className="text-zinc-400 text-sm font-semibold uppercase tracking-wider mb-1">Estimated Profit</h3>
                     {/* Menggunakan font-nums */}
-                    <p className="font-nums text-4xl font-bold text-white tracking-tight">+ $157.50</p>
+                    <p className="font-nums text-4xl font-bold text-white tracking-tight">
+                      + ${balance?.pnl_amount.toFixed(2) || "0.00"}
+                    </p>
                     <p className="text-orange-400 text-sm mt-1 font-semibold flex items-center gap-1">
-                      Daily profit <span className="font-nums font-bold">2.25%</span>
+                      Daily profit <span className="font-nums font-bold">{balance?.pnl_24h || 0}%</span>
                     </p>
                   </div>
                   <div className="w-10 h-10 rounded-sm border border-zinc-800 flex items-center justify-center text-zinc-500">
@@ -209,26 +213,26 @@ export default function BotDashboard() {
               <div className="bg-[#121214] border border-zinc-800/60 rounded-sm p-6 flex flex-col justify-between flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-zinc-100 font-semibold text-lg">System Status</h3>
-                  <span className={`px-2 py-0.5 rounded-sm text-[12px] font-semibold tracking-wide ${isBotRunning ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                    {isBotRunning ? 'RUNNING' : 'STOPPED'}
+                  <span className={`px-2 py-0.5 rounded-sm text-[12px] font-semibold tracking-wide ${isRunning ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                    {isRunning ? 'RUNNING' : 'STOPPED'}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
-                  <StatusBox label="Uptime" value="14d 2h" />
-                  <StatusBox label="Win Rate" value="68.5%" highlight />
-                  <StatusBox label="Trades" value="1,240" />
-                  <StatusBox label="Avg PnL" value="+1.2%" highlight />
+                  <StatusBox label="Uptime" value={stats?.uptime || "0h"} />
+                  <StatusBox label="Win Rate" value={`${stats?.win_rate || 0}%`} highlight />
+                  <StatusBox label="Trades" value={`${stats?.total_trades || 0}`} />
+                  <StatusBox label="Avg PnL" value={`${stats?.avg_pnl || 0}%`} highlight />
                 </div>
 
                 <button
-                  onClick={() => setIsBotRunning(!isBotRunning)}
-                  className={`w-full py-3 rounded-sm font-semibold text-sm flex items-center justify-center gap-2 transition-all tracking-wider ${isBotRunning
+                  onClick={toggleBot}
+                  className={`w-full py-3 rounded-sm font-semibold text-sm flex items-center justify-center gap-2 transition-all tracking-wider ${isRunning
                     ? 'bg-zinc-900 text-red-400 border border-zinc-800 hover:bg-red-950/30 hover:border-red-900/50 hover:text-red-300'
                     : 'bg-green-600 text-white hover:bg-green-500 shadow-lg shadow-green-900/20'
                     }`}
                 >
-                  {isBotRunning ? (
+                  {isRunning ? (
                     <> <Square size={16} fill="currentColor" /> STOP ENGINE </>
                   ) : (
                     <> <Play size={16} fill="currentColor" /> START ENGINE </>
@@ -282,6 +286,11 @@ export default function BotDashboard() {
                         </td>
                       </tr>
                     ))}
+                    {activeTrades.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-zinc-500 text-sm">No active positions</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -300,7 +309,7 @@ export default function BotDashboard() {
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2">
+              <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2 max-h-[250px]">
                 {logs.map((log, i) => (
                   <div key={i} className="flex gap-3 group">
                     <span className="text-zinc-600 shrink-0 select-none group-hover:text-zinc-500 transition-colors text-xs pt-0.5 font-light font-nums">
