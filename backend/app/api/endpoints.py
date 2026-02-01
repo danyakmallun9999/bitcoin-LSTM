@@ -147,3 +147,111 @@ async def get_active_trades():
         })
 
     return active_trades
+
+# --- Configuration & Manual Trading ---
+from app.schemas.config import SystemConfigSchema, ManualTradeRequest
+
+@router.get("/config", response_model=SystemConfigSchema)
+async def get_config():
+    from app.db.session import AsyncSessionLocal
+    from app.db.models import SystemConfig
+    from sqlalchemy import select
+    
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(select(SystemConfig).where(SystemConfig.id == 1))
+        config = result.scalar_one_or_none()
+        
+        if not config:
+            # Create default if not exists
+            config = SystemConfig(id=1, active_pair="BTCUSDT")
+            session.add(config)
+            await session.commit()
+            await session.refresh(config)
+            
+        return config
+
+@router.post("/config")
+async def update_config(new_config: SystemConfigSchema):
+    from app.db.session import AsyncSessionLocal
+    from app.db.models import SystemConfig
+    from sqlalchemy import select, update
+    from datetime import datetime
+    
+    async with AsyncSessionLocal() as session:
+        # Upsert logic (Update if id=1 exists)
+        stmt = update(SystemConfig).where(SystemConfig.id == 1).values(
+            active_pair=new_config.active_pair,
+            selected_strategy=new_config.selected_strategy,
+            timeframe=new_config.timeframe,
+            sl_percent=new_config.sl_percent,
+            tp_percent=new_config.tp_percent,
+            trailing_stop=new_config.trailing_stop,
+            last_updated=datetime.now()
+        )
+        await session.execute(stmt)
+        await session.commit()
+        
+    return {"status": "updated", "config": new_config}
+
+@router.post("/trade/manual")
+async def manual_trade(trade: ManualTradeRequest):
+    # Execute trade immediately
+    from app.services.market_data import logger
+    
+    # 1. Log action
+    print(f"MANUAL TRADE REQUEST: {trade.action} {trade.symbol}")
+    
+    # 2. Record to DB (Simulated Execution)
+    from app.db.session import AsyncSessionLocal
+    from app.db.models import TradeLog
+    from datetime import datetime
+    import random
+    
+    # Get current price
+    price = 64500.00 # Mock, fetch real if possible
+    try:
+        data = await binance_adapter.get_price(trade.symbol)
+        price = float(data['price'])
+    except: 
+        pass
+
+    async with AsyncSessionLocal() as session:
+        new_trade = TradeLog(
+            params_id="MANUAL",
+            symbol=trade.symbol,
+            side=trade.action,
+            price=price,
+            quantity=0.001, # Mock qty
+            timestamp=datetime.now(),
+            status="FILLED",
+            binance_order_id=int(datetime.now().timestamp() * 1000)
+        )
+        session.add(new_trade)
+        await session.commit()
+        
+    return {"status": "executed", "price": price, "side": trade.action}
+
+@router.get("/trades/history")
+async def get_trade_history(limit: int = 50, offset: int = 0):
+    from app.db.session import AsyncSessionLocal
+    from app.db.models import TradeLog
+    from sqlalchemy import select, desc
+    
+    async with AsyncSessionLocal() as session:
+        stmt = select(TradeLog).order_by(desc(TradeLog.timestamp)).limit(limit).offset(offset)
+        result = await session.execute(stmt)
+        trades = result.scalars().all()
+        
+    history = []
+    for t in trades:
+        history.append({
+            "id": t.id,
+            "date": t.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            "pair": t.symbol,
+            "side": t.side,
+            "price": t.price,
+            "quantity": t.quantity,
+            "status": t.status,
+            "pnl": "0.00%" # Todo: Real PnL logic
+        })
+    return history

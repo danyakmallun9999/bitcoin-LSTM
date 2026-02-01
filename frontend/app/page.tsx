@@ -22,6 +22,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
+import Link from 'next/link';
 import { useMarketData } from "@/hooks/use-market-data";
 import { useBotManager } from "@/hooks/use-bot-manager";
 
@@ -62,8 +63,16 @@ export default function BotDashboard() {
           <nav className="flex flex-col gap-8 w-full px-4">
             <NavItem icon={<Activity size={22} />} active />
             <NavItem icon={<Wallet size={22} />} />
-            <NavItem icon={<Terminal size={22} />} />
-            <NavItem icon={<Settings size={22} />} />
+            <Link href="/history">
+              <div className="w-10 h-10 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-sm transition-all cursor-pointer">
+                <Terminal size={22} />
+              </div>
+            </Link>
+            <Link href="/settings">
+              <div className="w-10 h-10 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-sm transition-all cursor-pointer">
+                <Settings size={22} />
+              </div>
+            </Link>
           </nav>
         </aside>
 
@@ -227,7 +236,7 @@ export default function BotDashboard() {
 
                 <button
                   onClick={toggleBot}
-                  className={`w-full py-3 rounded-sm font-semibold text-sm flex items-center justify-center gap-2 transition-all tracking-wider ${isRunning
+                  className={`w-full py-3 rounded-sm font-semibold text-sm flex items-center justify-center gap-2 transition-all tracking-wider mb-4 ${isRunning
                     ? 'bg-zinc-900 text-red-400 border border-zinc-800 hover:bg-red-950/30 hover:border-red-900/50 hover:text-red-300'
                     : 'bg-green-600 text-white hover:bg-green-500 shadow-lg shadow-green-900/20'
                     }`}
@@ -238,6 +247,29 @@ export default function BotDashboard() {
                     <> <Play size={16} fill="currentColor" /> START ENGINE </>
                   )}
                 </button>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => fetch('http://localhost:8000/api/v1/trade/manual', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ symbol: "BTCUSDT", action: "BUY" })
+                    }).then(() => alert("Manual BUY Executed!"))}
+                    className="py-3 bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500 hover:text-white font-semibold rounded-sm transition-all uppercase tracking-wide text-xs"
+                  >
+                    Force Buy
+                  </button>
+                  <button
+                    onClick={() => fetch('http://localhost:8000/api/v1/trade/manual', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ symbol: "BTCUSDT", action: "SELL" })
+                    }).then(() => alert("Manual SELL Executed!"))}
+                    className="py-3 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white font-semibold rounded-sm transition-all uppercase tracking-wide text-xs"
+                  >
+                    Force Sell
+                  </button>
+                </div>
               </div>
 
             </div>

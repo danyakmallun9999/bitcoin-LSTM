@@ -72,6 +72,9 @@ class LSTMStrategy(BaseStrategy):
         # 1. Indicators (need ~50)
         # 2. Sequence (need 60 after indicators)
         if len(self.candles) < self.buffer_size:
+            msg = f"[{self.strategy_id}] Buffering Data: {len(self.candles)}/{self.buffer_size}..."
+            print(msg)
+            self.last_log = msg
             return None
             
         # Prepare Data
