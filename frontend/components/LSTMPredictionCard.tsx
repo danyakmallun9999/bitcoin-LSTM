@@ -9,7 +9,7 @@ interface LSTMPredictionCardProps {
 export default function LSTMPredictionCard({ indicators }: LSTMPredictionCardProps) {
     if (!indicators) {
         return (
-            <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 flex flex-col items-center justify-center h-full min-h-[240px] shadow-xl">
+            <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 flex flex-col items-center justify-center h-full min-h-[240px]">
                 <div className="flex flex-col items-center gap-3 animate-pulse">
                     <BrainCircuit size={32} className="text-gray-600" />
                     <p className="text-gray-500 text-xs font-medium uppercase tracking-wider">Initializing Neural Net...</p>
@@ -29,7 +29,7 @@ export default function LSTMPredictionCard({ indicators }: LSTMPredictionCardPro
     };
 
     return (
-        <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 flex flex-col justify-between h-full relative overflow-hidden group shadow-xl">
+        <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 flex flex-col justify-between h-full relative overflow-hidden group">
 
             {/* Header */}
             <div className="flex items-center gap-2 mb-6 z-10">

@@ -62,7 +62,7 @@ export default function SettingsPage() {
                 <div className="max-w-3xl mx-auto flex flex-col gap-6">
 
                     {/* Card: Strategy */}
-                    <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8 shadow-xl">
+                    <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8">
                         <h2 className="text-sm font-semibold text-white mb-6 flex items-center gap-3 uppercase tracking-wider">
                             <div className="bg-[#252525] p-2 rounded-sm text-orange-500 border border-[#333]"><Activity size={16} /></div>
                             Strategy Parameters
@@ -115,7 +115,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Card: Risk Management */}
-                    <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8 shadow-xl">
+                    <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8">
                         <h2 className="text-sm font-semibold text-white mb-6 flex items-center gap-3 uppercase tracking-wider">
                             <div className="bg-[#252525] p-2 rounded-sm text-red-500 border border-[#333]"><ShieldAlert size={16} /></div>
                             Risk Management
@@ -179,7 +179,7 @@ export default function SettingsPage() {
                         whileTap={{ scale: 0.99 }}
                         onClick={handleSave}
                         disabled={saving}
-                        className="w-full bg-orange-500 hover:bg-orange-600 text-black font-bold py-4 rounded-sm flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none uppercase tracking-widest text-xs shadow-lg"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-black font-bold py-4 rounded-sm flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none uppercase tracking-widest text-xs"
                     >
                         {saving ? (
                             <>Saving Configuration...</>

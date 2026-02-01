@@ -56,7 +56,7 @@ export default function BotDashboard() {
 
             {/* Main Chart Section */}
             <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
-              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md overflow-hidden shadow-xl relative min-h-[400px]">
+              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md overflow-hidden relative min-h-[400px]">
                 <div className="p-6 flex justify-between items-start z-10 relative">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
@@ -77,7 +77,7 @@ export default function BotDashboard() {
                       <button
                         key={tf}
                         onClick={() => setTimeframe(tf)}
-                        className={`px-4 py-1.5 text-xs font-bold rounded-sm transition-all ${timeframe === tf ? 'bg-[#333] text-white shadow-sm border border-[#444]' : 'text-gray-500 hover:text-gray-300'}`}
+                        className={`px-4 py-1.5 text-xs font-bold rounded-sm transition-all ${timeframe === tf ? 'bg-[#333] text-white border border-[#444]' : 'text-gray-500 hover:text-gray-300'}`}
                       >
                         {tf}
                       </button>
@@ -122,7 +122,7 @@ export default function BotDashboard() {
             <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
 
               {/* RESTORED: Control Deck (System Control) */}
-              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 relative overflow-hidden shadow-xl">
+              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 relative overflow-hidden">
                 <div className="flex justify-between items-center mb-6 relative z-10">
                   <h3 className="text-gray-200 font-semibold text-sm flex items-center gap-2 uppercase tracking-wider">
                     <Zap size={16} className="text-orange-500" /> Control Deck
@@ -145,7 +145,7 @@ export default function BotDashboard() {
 
                 <button
                   onClick={toggleBot}
-                  className={`w-full py-4 rounded-sm font-bold text-xs uppercase tracking-widest transition-all shadow-lg relative overflow-hidden group 
+                  className={`w-full py-4 rounded-sm font-bold text-xs uppercase tracking-widest transition-all relative overflow-hidden group 
                     ${isRunning
                       ? 'bg-[#252525] border border-red-500/30 text-red-500 hover:bg-red-950/20 hover:border-red-500/50'
                       : 'bg-orange-600 hover:bg-orange-500 text-black border border-orange-700'

@@ -19,7 +19,7 @@ export default function Sidebar() {
         <aside className="fixed left-0 top-0 h-full w-20 border-r border-[#2a2a2a] flex flex-col items-center py-8 bg-[#1a1a1a] z-50">
             {/* Logo */}
             <div className="mb-10 cursor-pointer">
-                <div className="w-10 h-10 bg-[#252525] rounded-md flex items-center justify-center text-orange-500 font-bold text-xl shadow-lg border border-[#333]">B</div>
+                <div className="w-10 h-10 bg-[#252525] rounded-md flex items-center justify-center text-orange-500 font-bold text-xl border border-[#333]">B</div>
             </div>
 
             {/* Navigation */}

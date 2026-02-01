@@ -31,7 +31,7 @@ export default function WalletPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8 mb-8 relative overflow-hidden shadow-xl"
+                        className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8 mb-8 relative overflow-hidden"
                     >
                         <h2 className="text-gray-400 font-semibold text-xs uppercase tracking-wider mb-2">Total Estimated Balance</h2>
                         <div className="flex items-end gap-4">
@@ -52,7 +52,7 @@ export default function WalletPage() {
                                 <PieIcon size={16} className="text-orange-500" /> Asset Allocation
                             </h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8 shadow-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-8">
                                 {/* CHART */}
                                 <div className="h-[250px] w-full relative">
                                     <ResponsiveContainer width="100%" height="100%">
@@ -121,7 +121,7 @@ export default function WalletPage() {
                                 <TrendingUp size={16} className="text-orange-500" /> Performance
                             </h3>
 
-                            <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 shadow-lg">
+                            <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="bg-green-500/10 p-2 rounded-sm text-green-500 border border-green-500/20">
                                         <DollarSign size={16} />
@@ -132,7 +132,7 @@ export default function WalletPage() {
                                 <p className="text-gray-600 text-[10px] mt-1">Total profit from closed trades</p>
                             </div>
 
-                            <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 shadow-lg">
+                            <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="bg-orange-500/10 p-2 rounded-sm text-orange-500 border border-orange-500/20">
                                         <ArrowUpRight size={16} />

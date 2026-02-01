@@ -88,7 +88,7 @@ export default function TerminalPage() {
             <div className="flex-1 p-8 bg-[#141414] flex flex-col gap-6">
 
                 {/* Status Bar */}
-                <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-4 flex items-center justify-between shadow-lg">
+                <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                             <div className={`w-3 h-3 rounded-full ${isRunning ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
@@ -114,7 +114,7 @@ export default function TerminalPage() {
                 </div>
 
                 {/* Main Console Window */}
-                <div className="flex-1 bg-[#101010] border border-[#2a2a2a] rounded-md relative flex flex-col shadow-2xl overflow-hidden font-mono text-sm">
+                <div className="flex-1 bg-[#101010] border border-[#2a2a2a] rounded-md relative flex flex-col overflow-hidden font-mono text-sm">
                     {/* Console Header */}
                     <div className="bg-[#1a1a1a] border-b border-[#2a2a2a] p-3 flex items-center justify-between select-none">
                         <div className="flex items-center gap-2 text-gray-500">
