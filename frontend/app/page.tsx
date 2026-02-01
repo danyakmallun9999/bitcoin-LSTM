@@ -98,7 +98,8 @@ export default function BotDashboard() {
                         dataKey="time"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 10, fill: '#666', fontFamily: 'JetBrains Mono' }}
+                        minTickGap={50}
+                        tick={{ fontSize: 12, fill: '#9ca3af', fontFamily: 'JetBrains Mono' }}
                         dy={10}
                         tickFormatter={(val) => { try { return new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch { return val; } }}
                       />
@@ -106,7 +107,7 @@ export default function BotDashboard() {
                         domain={['auto', 'auto']}
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 10, fill: '#666', fontFamily: 'JetBrains Mono' }}
+                        tick={{ fontSize: 12, fill: '#9ca3af', fontFamily: 'JetBrains Mono' }}
                         dx={-10}
                         tickFormatter={(val) => `$${val}`}
                       />
