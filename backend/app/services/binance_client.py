@@ -1,4 +1,5 @@
-from binance.client import Client, AsyncClient
+from binance.client import Client
+from binance import AsyncClient
 from app.core.config import settings
 
 class BinanceAdapter:
