@@ -34,7 +34,8 @@ export default function RootLayout({
             <Sidebar />
             <main className="pl-20 w-full relative">
               {/* Subtle Grid Background moved here from page.tsx */}
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none z-0"></div>
+              {/* Subtle Grid Background Removed for Minimalism */}
+              <div className="absolute inset-0 z-0"></div>
               {children}
             </main>
           </div>

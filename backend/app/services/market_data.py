@@ -181,6 +181,7 @@ class MarketDataService:
                         "data": {
                             "symbol": data_point.symbol,
                             "price": data_point.close_price,
+                            "volume": data_point.volume,
                             "time": data_point.close_time.isoformat()
                         }
                     }

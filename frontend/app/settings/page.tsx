@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Save, Settings as SettingsIcon, ShieldAlert, Activity, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import Header from "@/components/Header";
+import PageTransition from "@/components/PageTransition";
+import { Save, Activity, ShieldAlert, CheckCircle } from 'lucide-react';
+import { motion } from "framer-motion";
 
 export default function SettingsPage() {
     const [config, setConfig] = useState({
@@ -43,165 +45,174 @@ export default function SettingsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
             });
-            alert("Configuration Saved!");
+            // Optional: Show toast or feedback
         } catch (e) {
-            alert("Failed to save.");
+            console.error(e);
         } finally {
-            setSaving(false);
+            setTimeout(() => setSaving(false), 1000); // Fake delay for UX
         }
     };
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-zinc-100 font-light p-8 flex flex-col items-center">
-            <div className="w-full max-w-2xl">
+        <div className="flex flex-col w-full min-h-screen">
+            <Header title="System Configuration" />
 
-                {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
-                    <Link href="/" className="w-10 h-10 rounded-sm bg-zinc-800 flex items-center justify-center hover:text-white text-zinc-400 transition-colors">
-                        <ArrowLeft size={20} />
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-semibold uppercase tracking-tight flex items-center gap-2">
-                            <SettingsIcon size={24} className="text-orange-500" /> System Configuration
-                        </h1>
-                        <p className="text-zinc-500 text-sm">Manage Risk Parameters and Strategy Settings</p>
-                    </div>
-                </div>
+            <PageTransition className="flex-1 p-8">
+                <div className="max-w-3xl mx-auto flex flex-col gap-6">
 
-                {/* Card: Strategy */}
-                <div className="bg-[#121214] border border-zinc-800 rounded-sm p-6 mb-6">
-                    <h2 className="text-lg font-medium text-white mb-6 flex items-center gap-2 pb-4 border-b border-zinc-800">
-                        <Activity size={18} /> Strategy Settings
-                    </h2>
+                    {/* Card: Strategy */}
+                    <div className="bg-[#121214] border border-zinc-800 rounded-2xl p-8">
+                        <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-3">
+                            <div className="bg-orange-500/10 p-2 rounded-lg text-orange-500"><Activity size={20} /></div>
+                            Strategy Parameters
+                        </h2>
 
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="col-span-2">
-                            <label className="block text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-2">Active Asset Pair</label>
-                            <select
-                                name="active_pair"
-                                value={config.active_pair}
-                                onChange={handleChange}
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-sm px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
-                            >
-                                <option value="BTCUSDT">BTC/USDT (Bitcoin)</option>
-                                <option value="ETHUSDT">ETH/USDT (Ethereum)</option>
-                                <option value="SOLUSDT">SOL/USDT (Solana)</option>
-                            </select>
-                        </div>
+                        <div className="grid grid-cols-2 gap-8">
+                            <div className="col-span-2">
+                                <label className="block text-zinc-500 text-xs uppercase tracking-wider font-bold mb-3">Active Asset</label>
+                                <select
+                                    name="active_pair"
+                                    value={config.active_pair}
+                                    onChange={handleChange}
+                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 transition-all appearance-none cursor-pointer hover:bg-zinc-800/50"
+                                >
+                                    <option value="BTCUSDT">BTC/USDT (Bitcoin)</option>
+                                    <option value="ETHUSDT">ETH/USDT (Ethereum)</option>
+                                    <option value="SOLUSDT">SOL/USDT (Solana)</option>
+                                </select>
+                            </div>
 
-                        <div>
-                            <label className="block text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-2">Strategy Model</label>
-                            <select
-                                name="selected_strategy"
-                                value={config.selected_strategy}
-                                onChange={handleChange}
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-sm px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
-                            >
-                                <option value="LSTMStrategy">LSTM Neural Network (v1)</option>
-                                <option value="RSIStrategy">RSI Mean Reversion</option>
-                                <option value="MACDStrategy">MACD Trend Follow</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-2">Timeframe</label>
-                            <select
-                                name="timeframe"
-                                value={config.timeframe}
-                                onChange={handleChange}
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-sm px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
-                            >
-                                <option value="1m">1 Minute</option>
-                                <option value="15m">15 Minutes</option>
-                                <option value="1H">1 Hour</option>
-                                <option value="4H">4 Hours</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Card: Risk Management */}
-                <div className="bg-[#121214] border border-zinc-800 rounded-sm p-6 mb-8">
-                    <h2 className="text-lg font-medium text-white mb-6 flex items-center gap-2 pb-4 border-b border-zinc-800">
-                        <ShieldAlert size={18} /> Risk Management
-                    </h2>
-
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-2">Stop Loss (%)</label>
-                            <input
-                                type="number"
-                                name="sl_percent"
-                                step="0.1"
-                                value={config.sl_percent}
-                                onChange={handleChange}
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-sm px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors font-mono"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-zinc-500 text-xs uppercase tracking-wider font-semibold mb-2">Take Profit (%)</label>
-                            <input
-                                type="number"
-                                name="tp_percent"
-                                step="0.1"
-                                value={config.tp_percent}
-                                onChange={handleChange}
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-sm px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors font-mono"
-                            />
-                        </div>
-
-                        <div className="col-span-2 flex items-center gap-3 bg-zinc-900/50 p-4 rounded-sm border border-zinc-800/50">
-                            <input
-                                type="checkbox"
-                                name="trailing_stop"
-                                checked={config.trailing_stop}
-                                onChange={handleChange}
-                                className="w-5 h-5 accent-orange-500"
-                            />
                             <div>
-                                <label className="block text-white font-medium">Enable Trailing Stop</label>
-                                <p className="text-zinc-500 text-xs">Automatically adjust Stop Loss as price moves in favor.</p>
+                                <label className="block text-zinc-500 text-xs uppercase tracking-wider font-bold mb-3">Model Architecture</label>
+                                <select
+                                    name="selected_strategy"
+                                    value={config.selected_strategy}
+                                    onChange={handleChange}
+                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer"
+                                >
+                                    <option value="LSTMStrategy">LSTM Neural Network (v1)</option>
+                                    <option value="RSIStrategy">RSI Mean Reversion</option>
+                                    <option value="MACDStrategy">MACD Trend Follow</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-zinc-500 text-xs uppercase tracking-wider font-bold mb-3">Timeframe</label>
+                                <select
+                                    name="timeframe"
+                                    value={config.timeframe}
+                                    onChange={handleChange}
+                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer"
+                                >
+                                    <option value="1m">1 Minute</option>
+                                    <option value="15m">15 Minutes</option>
+                                    <option value="1H">1 Hour</option>
+                                    <option value="4H">4 Hours</option>
+                                </select>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Action Buttons */}
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-4 rounded-sm shadow-lg shadow-orange-900/20 flex items-center justify-center gap-2 transition-all uppercase tracking-widest text-sm"
-                >
-                    {saving ? 'Saving Config...' : <><Save size={18} /> Save Configuration</>}
-                </button>
+                    {/* Card: Risk Management */}
+                    <div className="bg-[#121214] border border-zinc-800 rounded-2xl p-8">
+                        <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-3">
+                            <div className="bg-red-500/10 p-2 rounded-lg text-red-500"><ShieldAlert size={20} /></div>
+                            Risk Management
+                        </h2>
 
-                {/* DANGER ZONE */}
-                <div className="bg-[#121214] border border-red-900/30 rounded-sm p-6 mt-8">
-                    <h2 className="text-red-400 font-semibold text-lg mb-4 flex items-center gap-2">
-                        <ShieldAlert size={18} /> Danger Zone
-                    </h2>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-zinc-400 text-sm">Reset all trading history and balance.</p>
-                            <p className="text-zinc-600 text-xs">This action cannot be undone. Initial capital will reset to $10,000.</p>
+                        <div className="grid grid-cols-2 gap-8">
+                            <div>
+                                <label className="block text-zinc-500 text-xs uppercase tracking-wider font-bold mb-3">Stop Loss (%)</label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        name="sl_percent"
+                                        step="0.1"
+                                        value={config.sl_percent}
+                                        onChange={handleChange}
+                                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-red-500 transition-all font-mono"
+                                    />
+                                    <span className="absolute right-4 top-4 text-zinc-600 font-mono">%</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-zinc-500 text-xs uppercase tracking-wider font-bold mb-3">Take Profit (%)</label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        name="tp_percent"
+                                        step="0.1"
+                                        value={config.tp_percent}
+                                        onChange={handleChange}
+                                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-green-500 transition-all font-mono"
+                                    />
+                                    <span className="absolute right-4 top-4 text-zinc-600 font-mono">%</span>
+                                </div>
+                            </div>
+
+                            <div className="col-span-2">
+                                <label className="flex items-center gap-4 bg-zinc-900 p-4 rounded-xl border border-zinc-800 cursor-pointer hover:bg-zinc-800 transition-colors">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name="trailing_stop"
+                                            checked={config.trailing_stop}
+                                            onChange={handleChange}
+                                            className="peer sr-only"
+                                        />
+                                        <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                    </div>
+                                    <div>
+                                        <span className="block text-white font-bold text-sm">Trailing Stop Loss</span>
+                                        <span className="text-zinc-500 text-xs">Automatically adjust stop loss as price moves in favor.</span>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
+                    </div>
+
+                    {/* Save Button */}
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                        {saving ? (
+                            <>Saving Configuration...</>
+                        ) : (
+                            <><Save size={20} /> Save Changes</>
+                        )}
+                    </motion.button>
+
+                    {saving && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mx-auto flex items-center gap-2 text-green-500 font-bold text-sm"
+                        >
+                            <CheckCircle size={16} /> Configuration updated successfully.
+                        </motion.div>
+                    )}
+
+                    {/* DANGER ZONE */}
+                    <div className="mt-8 border-t border-zinc-800/50 pt-8">
                         <button
                             onClick={() => {
-                                if (confirm("ARE YOU SURE? This will delete all trade history and reset your balance.")) {
-                                    fetch('http://localhost:8000/api/v1/system/reset', { method: 'POST' })
-                                        .then(() => alert("System Reset Successful!"))
-                                        .catch(err => alert("Reset Failed"));
+                                if (confirm("Warning: This will wipe all trade history. Continue?")) {
+                                    fetch('http://localhost:8000/api/v1/system/reset', { method: 'POST' });
                                 }
                             }}
-                            className="px-4 py-2 bg-red-900/20 hover:bg-red-900/40 text-red-500 border border-red-900/50 rounded-sm text-sm font-semibold transition-all"
+                            className="text-red-500/50 text-xs hover:text-red-500 transition-colors mx-auto block"
                         >
-                            Reset System
+                            Reset System Data
                         </button>
                     </div>
-                </div>
 
-            </div>
+                </div>
+            </PageTransition>
         </div>
     );
 }
