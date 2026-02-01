@@ -238,14 +238,22 @@ async def get_trade_history(limit: int = 50, offset: int = 0):
 @router.post("/system/reset")
 async def reset_system():
     from app.db.session import AsyncSessionLocal
-    from app.db.models import TradeLog
+    from app.db.models import TradeLog, MarketTicket
     from sqlalchemy import delete
     
     async with AsyncSessionLocal() as session:
         await session.execute(delete(TradeLog))
+        await session.execute(delete(MarketTicket))
         await session.commit()
+    
+    # Auto-Restart Bot to clear memory buffers
+    from app.services.market_data import market_data_service
+    if market_data_service._running:
+        print("System Reset triggered. Restarting Bot...")
+        await market_data_service.stop()
+        await market_data_service.start()
         
-    return {"status": "reset", "message": "All trade data cleared. System reset to initial state."}
+    return {"status": "reset", "message": "All trade and market data cleared. Bot restarted."}
 
 # --- Configuration & Manual Trading ---
 from app.schemas.config import SystemConfigSchema, ManualTradeRequest

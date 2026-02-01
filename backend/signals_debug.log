@@ -14,3 +14,14 @@
 2026-02-01 20:51:00.100885: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78466.72, 'reason': 'LSTM_PRED_UP (78579.00)'}
 2026-02-01 20:52:00.161050: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78409.9, 'reason': 'LSTM_PRED_UP (78567.64)'}
 2026-02-01 20:53:00.111482: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78322.23, 'reason': 'LSTM_PRED_UP (78551.62)'}
+2026-02-01 20:54:00.100598: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78331.16, 'reason': 'LSTM_PRED_UP (78535.43)'}
+2026-02-01 20:55:00.110147: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78359.6, 'reason': 'LSTM_PRED_UP (78520.41)'}
+2026-02-01 20:56:00.139415: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78332.79, 'reason': 'LSTM_PRED_UP (78504.23)'}
+2026-02-01 20:57:00.158089: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78280.17, 'reason': 'LSTM_PRED_UP (78478.10)'}
+2026-02-01 20:58:00.183255: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78294.69, 'reason': 'LSTM_PRED_UP (78461.45)'}
+2026-02-01 20:59:00.131622: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78320.0, 'reason': 'LSTM_PRED_UP (78447.49)'}
+2026-02-01 21:00:00.334577: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78317.51, 'reason': 'LSTM_PRED_UP (78436.25)'}
+2026-02-01 21:01:00.100732: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78268.07, 'reason': 'LSTM_PRED_UP (78426.70)'}
+2026-02-01 21:02:00.103365: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78208.02, 'reason': 'LSTM_PRED_UP (78393.62)'}
+2026-02-01 21:04:00.129719: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78235.99, 'reason': 'LSTM_PRED_UP (78374.78)'}
+2026-02-01 21:05:00.163099: SIGNAL FOUND: {'action': 'BUY', 'symbol': 'BTCUSDT', 'price': 78217.42, 'reason': 'LSTM_PRED_UP (78371.13)'}
