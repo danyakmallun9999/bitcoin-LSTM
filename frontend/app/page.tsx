@@ -105,7 +105,7 @@ export default function BotDashboard() {
                           <button
                             key={tf}
                             onClick={() => setTimeframe(tf)}
-                            className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${timeframe === tf ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${timeframe === tf ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                           >
                             {tf}
                           </button>
@@ -119,10 +119,7 @@ export default function BotDashboard() {
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
-                          <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                          </linearGradient>
+                          {/* Gradient removed for flat design */}
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" opacity={0.2} />
 
@@ -150,7 +147,7 @@ export default function BotDashboard() {
                           content={({ active, payload, label }) => {
                             if (active && payload && payload.length) {
                               return (
-                                <div className="bg-zinc-900 border border-zinc-700/50 p-3 rounded-lg shadow-2xl backdrop-blur-sm">
+                                <div className="bg-zinc-900 border border-zinc-700/50 p-3 rounded-lg">
                                   <p className="text-zinc-400 text-[10px] mb-1 font-mono uppercase tracking-wider">{label ? new Date(label).toLocaleTimeString() : ''}</p>
                                   <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-2">
@@ -188,8 +185,8 @@ export default function BotDashboard() {
                           dataKey="price"
                           stroke="#f97316"
                           strokeWidth={2}
-                          fillOpacity={1}
-                          fill="url(#colorPrice)"
+                          fillOpacity={0.1}
+                          fill="#f97316"
                           isAnimationActive={false}
                         />
                       </AreaChart>
@@ -281,10 +278,10 @@ export default function BotDashboard() {
 
                 <button
                   onClick={toggleBot}
-                  className={`w-full py-4 rounded-xl font-bold text-sm tracking-widest transition-all shadow-lg active:scale-[0.98] active:translate-y-1 relative overflow-hidden group 
+                  className={`w-full py-4 rounded-xl font-bold text-sm tracking-widest transition-all active:scale-[0.98] active:translate-y-1 relative overflow-hidden group 
                     ${isRunning
                       ? 'bg-zinc-900 border-2 border-red-900/50 text-red-500 hover:bg-red-950/20 hover:border-red-500/50'
-                      : 'bg-gradient-to-br from-orange-500 to-orange-600 border-b-4 border-orange-800 text-white hover:brightness-110 active:border-b-0'
+                      : 'bg-orange-600 text-white hover:brightness-110'
                     }`}
                 >
                   <div className="relative z-10 flex items-center justify-center gap-3">
@@ -374,7 +371,7 @@ function SignalToast({ signal, onClose }: { signal: any, onClose: () => void }) 
         exit={{ x: 100, opacity: 0 }}
         className="fixed top-24 right-8 z-[100]"
       >
-        <div className="w-80 bg-[#18181b] border border-zinc-800 rounded-xl shadow-2xl p-4 relative overflow-hidden">
+        <div className="w-80 bg-[#18181b] border border-zinc-800 rounded-xl p-4 relative overflow-hidden">
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${isBuy ? 'bg-green-500' : 'bg-red-500'}`}></div>
           <div className="flex gap-4 pl-2">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isBuy ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>

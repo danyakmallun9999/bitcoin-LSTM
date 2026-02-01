@@ -178,7 +178,7 @@ export default function SettingsPage() {
                         whileTap={{ scale: 0.98 }}
                         onClick={handleSave}
                         disabled={saving}
-                        className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                        className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                     >
                         {saving ? (
                             <>Saving Configuration...</>

@@ -58,7 +58,7 @@ function NavItem({ href, icon, active, label }: { href: string, icon: React.Reac
                 </div>
 
                 {/* Tooltip */}
-                <span className="absolute left-14 bg-zinc-900 text-zinc-300 text-[10px] font-medium px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-zinc-800 pointer-events-none z-50 shadow-xl">
+                <span className="absolute left-14 bg-zinc-900 text-zinc-300 text-[10px] font-medium px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-zinc-800 pointer-events-none z-50">
                     {label}
                 </span>
             </div>

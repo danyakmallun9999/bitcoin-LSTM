@@ -91,7 +91,7 @@ export default function LSTMPredictionCard({ indicators }: LSTMPredictionCardPro
                         className={`h-full relative ${getConfidenceColor(confidence)}`}
                     >
                         {/* Shimmer effect */}
-                        <div className="absolute top-0 right-0 bottom-0 w-[20px] bg-gradient-to-r from-transparent to-white/20 skew-x-12"></div>
+                        {/* Gradient element removed */}
                     </motion.div>
                 </div>
             </div>

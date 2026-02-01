@@ -38,7 +38,7 @@ export default function Header({ title }: { title: string }) {
                 </div>
 
                 {/* User Avatar */}
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-zinc-800 to-zinc-700 border border-white/10 flex items-center justify-center text-white shadow-lg">
+                <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-white">
                     <span className="font-bold text-xs">AI</span>
                 </div>
             </div>
