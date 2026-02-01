@@ -54,7 +54,7 @@ export default function BotDashboard() {
           .font-nums { font-family: 'JetBrains Mono', monospace; letter-spacing: -0.02em; }
           .glass-panel {
             background: #121214; 
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #27272a; 
           }
         `}
       </style>
@@ -104,7 +104,7 @@ export default function BotDashboard() {
 
           {/* 1. CHART SECTION */}
           <div className="glass-panel rounded-2xl p-1 shadow-2xl shadow-black/40">
-            <div className="bg-[#0c0c0e]/50 rounded-xl overflow-hidden border border-white/5">
+            <div className="bg-[#0c0c0e] rounded-xl overflow-hidden border border-zinc-800">
               <div className="p-6 flex justify-between items-start border-b border-white/5 bg-white/[0.01]">
                 <div>
                   <div className="flex items-center gap-3">
@@ -293,7 +293,7 @@ export default function BotDashboard() {
                 </div>
               ) : (
                 activeTrades.map((trade) => (
-                  <div key={trade.id} className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-xl mb-3 hover:border-zinc-700 transition-colors">
+                  <div key={trade.id} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-3 hover:border-zinc-700 transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-xs text-zinc-300">
@@ -357,7 +357,7 @@ function SignalToast({ signal, onClose }: { signal: any, onClose: () => void }) 
 
 function StatusBox({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="bg-zinc-900/50 rounded-sm p-3 border border-zinc-800/50">
+    <div className="bg-zinc-900 rounded-sm p-3 border border-zinc-800">
       <p className="text-zinc-500 text-[11px] uppercase font-semibold mb-1 tracking-wider">{label}</p>
       <p className={`text-lg font-bold font-nums ${highlight ? 'text-orange-400' : 'text-white'}`}>
         {value}
