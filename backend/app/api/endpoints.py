@@ -82,61 +82,12 @@ async def get_bot_status():
     return {"status": status, "uptime": "0h 42m"} # Todo: Calculate real uptime 
 
 # --- Wallet Helper ---
-async def calculate_wallet_state(session):
-    from app.db.models import TradeLog
-    from sqlalchemy import select, asc
-    
-    # 1. Fetch all trades chronological
-    stmt = select(TradeLog).order_by(asc(TradeLog.timestamp))
-    result = await session.execute(stmt)
-    trades = result.scalars().all()
-    
-    # 2. Replay
-    initial_capital = 10000.0
-    cash = initial_capital
-    position = 0.0
-    avg_entry = 0.0
-    
-    active_position_record = None # To store details of the current open leg
-    
-    for t in trades:
-        if t.side == "BUY":
-            cost = t.price * t.quantity
-            cash -= cost
-            # Avg Entry update (Weighted Average)
-            total_val = (position * avg_entry) + cost
-            position += t.quantity
-            if position > 0:
-                avg_entry = total_val / position
-            
-            # If this flipped us to net long or added to it, track it
-            if position > 0 and active_position_record is None:
-                 active_position_record = t # Track first buy of this seq
-                 
-        elif t.side == "SELL":
-            revenue = t.price * t.quantity
-            cash += revenue
-            position -= t.quantity
-            
-            if position <= 0.000001: # Closed
-                position = 0
-                avg_entry = 0
-                active_position_record = None
-
-    return {
-        "cash": cash,
-        "position": position,
-        "avg_entry": avg_entry,
-        "last_trade": active_position_record,
-        "initial_capital": initial_capital
-    }
 
 @router.get("/account/balance")
 async def get_balance():
-    from app.db.session import AsyncSessionLocal
+    from app.services.trade_executor import TradeExecutor
     
-    async with AsyncSessionLocal() as session:
-        state = await calculate_wallet_state(session)
+    state = await TradeExecutor.calculate_wallet_state()
     
     # Get Current Price for Valuation
     current_price = 0.0
@@ -178,10 +129,9 @@ async def get_balance():
 
 @router.get("/trades/active")
 async def get_active_trades():
-    from app.db.session import AsyncSessionLocal
+    from app.services.trade_executor import TradeExecutor
     
-    async with AsyncSessionLocal() as session:
-        state = await calculate_wallet_state(session)
+    state = await TradeExecutor.calculate_wallet_state()
         
     if state['position'] <= 0.000001:
         return []
@@ -220,7 +170,9 @@ async def get_stats():
         # Total Trades
         result = await session.execute(select(func.count(TradeLog.id)))
         total_trades = result.scalar() or 0
-        state = await calculate_wallet_state(session)
+        
+    from app.services.trade_executor import TradeExecutor
+    state = await TradeExecutor.calculate_wallet_state()
 
     # Win Rate: Need to track closed trades individually. 
     # For now keep hardcoded or approximation.
@@ -311,6 +263,13 @@ async def update_config(new_config: SystemConfigSchema):
         )
         await session.execute(stmt)
         await session.commit()
+    
+    # Auto-Restart Bot to apply changes
+    from app.services.market_data import market_data_service
+    if market_data_service._running:
+        print("Config updated. Restarting Bot to apply changes...")
+        await market_data_service.stop()
+        await market_data_service.start()
         
     return {"status": "updated", "config": new_config}
 

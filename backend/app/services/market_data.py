@@ -154,6 +154,20 @@ class MarketDataService:
                                         }
                                     })
                                     
+                                    # 5. Execute Trade (Auto-Trading)
+                                    from app.services.trade_executor import TradeExecutor
+                                    trade = await TradeExecutor.execute_signal(signal)
+                                    
+                                    if trade:
+                                        await manager.broadcast({
+                                            "type": "LOG",
+                                            "data": {
+                                                "time": datetime.now().strftime("%H:%M:%S"),
+                                                "msg": f"EXECUTED: {trade.side} {trade.quantity:.4f} @ {trade.price}",
+                                                "type": "success"
+                                            }
+                                        })
+                                    
                             except Exception as e:
                                 print(f"Strategy Error {strategy_id}: {e}")
                     
@@ -176,6 +190,22 @@ class MarketDataService:
         """
         Main entry point to start ingesting data.
         """
+        # 0. Load Config from DB
+        from app.db.session import AsyncSessionLocal
+        from app.db.models import SystemConfig
+        from sqlalchemy import select
+        
+        active_pair = "BTCUSDT"
+        interval = "1m"
+        
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(select(SystemConfig).where(SystemConfig.id == 1))
+            system_config = result.scalar_one_or_none()
+            if system_config:
+                active_pair = system_config.active_pair
+                interval = system_config.timeframe
+                logger.info(f"Loaded Config: {active_pair} {interval}")
+
         # 1. Initialize Strategies
         from app.strategy.registry import strategy_registry
         from app.strategy.implementations.lstm_strategy import LSTMStrategy
@@ -185,15 +215,15 @@ class MarketDataService:
         
         # Config (Point to trained model)
         config = {
-            "symbol": "BTCUSDT",
-            "interval": "1m", # Match socket interval
+            "symbol": active_pair,
+            "interval": interval, # Match socket interval
             "model_path": "app/ml/models/lstm_v1.pth",
             "seq_length": 60
         }
         
         try:
             strategy_registry.create_instance("LSTMStrategy", "lstm_v1", config)
-            print("LSTM Strategy 'lstm_v1' initialized and running.")
+            print(f"LSTM Strategy 'lstm_v1' initialized and running for {active_pair}.")
         except Exception as e:
             print(f"Failed to init strategy: {e}")
 
@@ -202,7 +232,7 @@ class MarketDataService:
             # print(f"Update: {data.symbol} Price: {data.close_price} Closed: {data.is_closed}")
             pass
 
-        # Start for BTCUSDT
-        await self.start_kline_socket("BTCUSDT", "1m", process_kline)
+        # Start for Active Pair
+        await self.start_kline_socket(active_pair, interval, process_kline)
 
 market_data_service = MarketDataService()

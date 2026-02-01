@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import { MarketProvider } from "@/context/MarketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +27,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#050505] text-zinc-100`}
       >
-        {children}
+        <MarketProvider>
+          <div className="min-h-screen flex font-light" style={{ fontFamily: "var(--font-geist-sans)" }}>
+            <Sidebar />
+            <main className="pl-20 w-full relative">
+              {/* Subtle Grid Background moved here from page.tsx */}
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none z-0"></div>
+              {children}
+            </main>
+          </div>
+        </MarketProvider>
       </body>
     </html>
   );
