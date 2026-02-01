@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "trading-system-backend"
+version = "0.1.0"
+description = "AI-Powered Electro-Mechanical Trading System Backend"
+authors = ["Admin <admin@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.109.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+pydantic = "^2.6.0"
+pydantic-settings = "^2.1.0"
+sqlalchemy = "^2.0.25"
+asyncpg = "^0.29.0"
+polars = "^0.20.0"
+python-binance = "^1.0.19"
+numpy = "^1.26.0"
+# torch = "^2.2.0" # Uncomment when ready for heavy ML install
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+black = "^24.1.0"
+isort = "^5.13.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
