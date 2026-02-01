@@ -18,7 +18,7 @@ class LSTMStrategy(BaseStrategy):
         
         # Buffer to store recent candles for inference
         # We need at least seq_length + lookback for indicators
-        self.buffer_size = 100 
+        self.buffer_size = 150 
         self.candles: List[KlineData] = []
         
         # Model & Scaler
@@ -27,6 +27,7 @@ class LSTMStrategy(BaseStrategy):
         # For simplicity in this demo, we fit scaler on the buffer (Not ideal, but works for POC)
         # OR we just assume the range is similar.
         self.last_log = ""
+        self.last_indicators = None
         
         self.load_model()
         
@@ -122,6 +123,19 @@ class LSTMStrategy(BaseStrategy):
             
             current_close = market_data.close_price
             
+            # Store indicators for UI
+            # Get the last row of indicators
+            last_row = df.iloc[-1]
+            self.last_indicators = {
+                "rsi": float(last_row.get('rsi', 0)),
+                "sma_20": float(last_row.get('sma_20', 0)),
+                "volatility": float(last_row.get('volatility', 0)),
+                "predicted_price": float(predicted_close),
+                "current_price": float(current_close),
+                "sentiment": "BULLISH" if predicted_close > current_close else "BEARISH",
+                "confidence": abs((predicted_close - current_close) / current_close) * 1000 # Dummy score scale
+            }
+
             log_msg = f"[{self.strategy_id}] Price: {current_close:.2f} -> Pred: {predicted_close:.2f}"
             print(log_msg)
             self.last_log = log_msg

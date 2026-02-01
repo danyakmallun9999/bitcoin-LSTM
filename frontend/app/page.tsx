@@ -32,7 +32,7 @@ export default function BotDashboard() {
   const [timeframe, setTimeframe] = useState("1m");
 
   // State Hooks
-  const { price, history, logs, connectionStatus, latestSignal } = useMarketData("BTCUSDT", timeframe);
+  const { price, history, logs, connectionStatus, latestSignal, indicators } = useMarketData("BTCUSDT", timeframe);
   const { isRunning, stats, balance, activeTrades, toggleBot } = useBotManager();
   const [notification, setNotification] = useState<any>(null);
 
@@ -54,8 +54,7 @@ export default function BotDashboard() {
           
           .font-nums { font-family: 'JetBrains Mono', monospace; letter-spacing: -0.02em; }
           .glass-panel {
-            background: rgba(18, 18, 20, 0.7);
-            backdrop-filter: blur(12px);
+            background: #121214; /* Solid background, no transparency */
             border: 1px solid rgba(255, 255, 255, 0.05);
           }
         `}
@@ -96,7 +95,7 @@ export default function BotDashboard() {
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none z-0"></div>
 
           {/* TOP BAR */}
-          <header className="h-24 flex items-center justify-between px-10 sticky top-0 z-20 backdrop-blur-md bg-[#050505]/80 border-b border-white/5">
+          <header className="h-24 flex items-center justify-between px-10 sticky top-0 z-20 bg-[#050505] border-b border-white/5">
             <div>
               <h1 className="font-semibold text-3xl tracking-tight text-white/90">Dashboard</h1>
               <div className="flex items-center gap-2 mt-1">
@@ -117,7 +116,7 @@ export default function BotDashboard() {
                 <div className="text-right">
                   <p className="text-[10px] text-green-500/80 uppercase font-bold tracking-wider mb-0.5">Profit (24h)</p>
                   <p className="font-nums font-bold text-2xl text-green-400 tracking-tight">
-                    {balance?.pnl_24h > 0 ? '+' : ''}{balance?.pnl_24h || 0}%
+                    {(balance?.pnl_24h || 0) > 0 ? '+' : ''}{balance?.pnl_24h || 0}%
                   </p>
                 </div>
               </div>
@@ -203,7 +202,52 @@ export default function BotDashboard() {
                 </div>
               </div>
 
-              {/* 2. TERMINAL LOGS (Collapsible-ish feel) */}
+              {/* 2. TECHNICAL & SENTIMENT ANALYSIS */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Sentiment Analysis */}
+                <div className="glass-panel rounded-2xl p-6">
+                  <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <TrendingUp size={14} /> Market Sentiment
+                  </h3>
+                  {indicators ? (
+                    <div className="flex items-center gap-6">
+                      <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 ${indicators.sentiment === 'BULLISH' ? 'border-green-500/20 text-green-500' : 'border-red-500/20 text-red-500'}`}>
+                        {indicators.sentiment === 'BULLISH' ? <ArrowUpRight size={32} /> : <TrendingUp size={32} className="rotate-180" />}
+                      </div>
+                      <div>
+                        <h4 className={`text-2xl font-bold tracking-tight ${indicators.sentiment === 'BULLISH' ? 'text-green-500' : 'text-red-500'}`}>
+                          {indicators.sentiment}
+                        </h4>
+                        <p className="text-zinc-500 text-xs mt-1 font-medium">Confidence Score</p>
+                        <div className="h-2 w-32 bg-zinc-800 rounded-full mt-2 overflow-hidden">
+                          <div className="h-full bg-zinc-600 rounded-full" style={{ width: `${Math.min(indicators.confidence, 100)}%` }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-zinc-500 text-sm italic">Waiting for analysis...</div>
+                  )}
+                </div>
+
+                {/* Technical Indicators */}
+                <div className="glass-panel rounded-2xl p-6">
+                  <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Activity size={14} /> Technical Indicators
+                  </h3>
+                  {indicators ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <StatusBox label="RSI (14)" value={indicators.rsi.toFixed(2)} highlight={indicators.rsi > 70 || indicators.rsi < 30} />
+                      <StatusBox label="SMA (20)" value={indicators.sma_20.toFixed(2)} />
+                      <StatusBox label="Volatility" value={indicators.volatility.toFixed(4)} />
+                      <StatusBox label="Pred. Close" value={`$${indicators.predicted_price.toFixed(2)}`} />
+                    </div>
+                  ) : (
+                    <div className="text-zinc-500 text-sm italic">Calculating...</div>
+                  )}
+                </div>
+              </div>
+
+              {/* 3. TERMINAL LOGS (Collapsible-ish feel) */}
               <div className="glass-panel rounded-2xl p-6 min-h-[250px] flex flex-col relative overflow-hidden group">
                 <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-orange-500 to-purple-600 opacity-80"></div>
                 <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -264,30 +308,6 @@ export default function BotDashboard() {
                 </div>
 
                 <div className="h-px bg-white/5 w-full my-6"></div>
-
-                {/* Manual Override */}
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => fetch('http://localhost:8000/api/v1/trade/manual', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ symbol: "BTCUSDT", action: "BUY" })
-                    })}
-                    className="py-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-500 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
-                  >
-                    Force Buy
-                  </button>
-                  <button
-                    onClick={() => fetch('http://localhost:8000/api/v1/trade/manual', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ symbol: "BTCUSDT", action: "SELL" })
-                    })}
-                    className="py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
-                  >
-                    Force Sell
-                  </button>
-                </div>
 
               </div>
 
@@ -350,7 +370,7 @@ function SignalToast({ signal, onClose }: { signal: any, onClose: () => void }) 
   const isBuy = signal.action === 'BUY';
   return (
     <div className="fixed top-24 right-10 z-[100] animate-in slide-in-from-right-10 fade-in duration-300 pointer-events-auto">
-      <div className="w-96 bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-5 relative overflow-hidden backdrop-blur-3xl">
+      <div className="w-96 bg-[#0c0c0e] border border-white/10 rounded-xl shadow-2xl p-5 relative overflow-hidden">
         <div className={`absolute top-0 left-0 w-1 h-full ${isBuy ? 'bg-green-500' : 'bg-red-500'}`}></div>
         <div className="flex gap-4">
           <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isBuy ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>

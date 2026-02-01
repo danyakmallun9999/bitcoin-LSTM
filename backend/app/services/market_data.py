@@ -130,6 +130,13 @@ class MarketDataService:
                                     })
                                     strategy.last_log = "" # Clear after sending
                                 
+                                # Broadcast Indicators
+                                if hasattr(strategy, 'last_indicators') and strategy.last_indicators:
+                                    await manager.broadcast({
+                                        "type": "INDICATORS",
+                                        "data": strategy.last_indicators
+                                    })
+                                
                                 # Broadcast Signal
                                 if signal:
                                     print(f"SIGNAL: {signal}")
