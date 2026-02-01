@@ -26,6 +26,7 @@ class LSTMStrategy(BaseStrategy):
         self.scaler = MinMaxScaler() # Note: In prod, scaler should be loaded from training!
         # For simplicity in this demo, we fit scaler on the buffer (Not ideal, but works for POC)
         # OR we just assume the range is similar.
+        self.last_log = ""
         
         self.load_model()
         
@@ -118,7 +119,9 @@ class LSTMStrategy(BaseStrategy):
             
             current_close = market_data.close_price
             
-            print(f"[{self.strategy_id}] Price: {current_close:.2f} -> Pred: {predicted_close:.2f}")
+            log_msg = f"[{self.strategy_id}] Price: {current_close:.2f} -> Pred: {predicted_close:.2f}"
+            print(log_msg)
+            self.last_log = log_msg
             
             # Simple Logic: If predicted increase > 0.1%
             threshold = 1.0005 # 0.05%
@@ -139,6 +142,7 @@ class LSTMStrategy(BaseStrategy):
                 
         except Exception as e:
             print(f"[{self.strategy_id}] Inference Error: {e}")
+            self.last_log = f"Error: {str(e)}"
             
         return None
 

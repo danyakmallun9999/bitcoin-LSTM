@@ -32,18 +32,11 @@ const activeTrades = [
   { id: 3, pair: 'SOL/USDT', type: 'LONG', entry: 145.50, current: 144.20, pnl: '-0.89%', status: 'OPEN' },
 ];
 
-const logs = [
-  { time: '10:55:01', msg: 'Fetching OHLCV data from Binance...', type: 'info' },
-  { time: '10:55:02', msg: 'LSTM Model Prediction: BULLISH (0.87)', type: 'success' },
-  { time: '10:55:02', msg: 'No new signal generated. Holding position.', type: 'info' },
-  { time: '10:54:00', msg: 'WebSocket heartbeat received.', type: 'dim' },
-];
-
 export default function BotDashboard() {
   const [isBotRunning, setIsBotRunning] = useState(true);
 
   // Real-time Data Hook
-  const { price, history, connectionStatus } = useMarketData("BTCUSDT");
+  const { price, history, logs, connectionStatus } = useMarketData("BTCUSDT");
 
   return (
     <>
@@ -148,6 +141,13 @@ export default function BotDashboard() {
                       tick={{ fontSize: 12, fill: '#52525b', fontFamily: 'JetBrains Mono', fontWeight: 400 }}
                       dy={10}
                       minTickGap={30}
+                      tickFormatter={(val) => {
+                        try {
+                          return new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        } catch {
+                          return val;
+                        }
+                      }}
                     />
                     <YAxis
                       domain={['auto', 'auto']}
@@ -224,8 +224,8 @@ export default function BotDashboard() {
                 <button
                   onClick={() => setIsBotRunning(!isBotRunning)}
                   className={`w-full py-3 rounded-sm font-semibold text-sm flex items-center justify-center gap-2 transition-all tracking-wider ${isBotRunning
-                      ? 'bg-zinc-900 text-red-400 border border-zinc-800 hover:bg-red-950/30 hover:border-red-900/50 hover:text-red-300'
-                      : 'bg-green-600 text-white hover:bg-green-500 shadow-lg shadow-green-900/20'
+                    ? 'bg-zinc-900 text-red-400 border border-zinc-800 hover:bg-red-950/30 hover:border-red-900/50 hover:text-red-300'
+                    : 'bg-green-600 text-white hover:bg-green-500 shadow-lg shadow-green-900/20'
                     }`}
                 >
                   {isBotRunning ? (
@@ -308,8 +308,8 @@ export default function BotDashboard() {
                     </span>
                     {/* Log msg tetap font-nums (JetBrains Mono) agar seperti terminal asli */}
                     <span className={`break-words font-light font-nums text-xs ${log.type === 'success' ? 'text-green-400' :
-                        log.type === 'info' ? 'text-blue-400' :
-                          log.type === 'dim' ? 'text-zinc-600' : 'text-zinc-300'
+                      log.type === 'info' ? 'text-blue-400' :
+                        log.type === 'dim' ? 'text-zinc-600' : 'text-zinc-300'
                       }`}>
                       {log.type === 'success' && '🚀 '}
                       {log.msg}

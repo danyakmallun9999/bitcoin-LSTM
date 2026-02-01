@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import TypedDict, Literal
 
 class KlineData(BaseModel):
     """
@@ -15,6 +16,12 @@ class KlineData(BaseModel):
     volume: float
     close_time: datetime
     is_closed: bool
+
+class TradeSignal(TypedDict):
+    action: Literal["BUY", "SELL", "HOLD"]
+    symbol: str
+    price: float
+    reason: str
 
 class TradeData(BaseModel):
     """

@@ -11,9 +11,16 @@ export interface TickData {
     time: string;
 }
 
+export interface LogData {
+    time: string;
+    msg: string;
+    type: 'info' | 'success' | 'dim' | 'error';
+}
+
 export const useMarketData = (symbol: string = "BTCUSDT") => {
     const [price, setPrice] = useState<number>(0);
     const [history, setHistory] = useState<TickData[]>([]);
+    const [logs, setLogs] = useState<LogData[]>([]);
 
     const { lastJsonMessage, readyState } = useWebSocket(SOCKET_URL, {
         shouldReconnect: (closeEvent) => true,
@@ -24,14 +31,19 @@ export const useMarketData = (symbol: string = "BTCUSDT") => {
     useEffect(() => {
         if (lastJsonMessage !== null) {
             const message = lastJsonMessage as any;
+
             if (message.type === "TICK" && message.data.symbol === symbol) {
                 const tick = message.data as TickData;
                 setPrice(tick.price);
                 setHistory((prev) => {
                     const newHistory = [...prev, tick];
-                    if (newHistory.length > 50) return newHistory.slice(1); // Keep last 50
+                    if (newHistory.length > 50) return newHistory.slice(1);
                     return newHistory;
                 });
+            }
+
+            if (message.type === "LOG") {
+                setLogs((prev) => [message.data, ...prev].slice(0, 50));
             }
         }
     }, [lastJsonMessage, symbol]);
@@ -44,5 +56,5 @@ export const useMarketData = (symbol: string = "BTCUSDT") => {
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
     }[readyState];
 
-    return { price, history, connectionStatus };
+    return { price, history, logs, connectionStatus };
 };

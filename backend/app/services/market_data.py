@@ -86,17 +86,47 @@ class MarketDataService:
                         await session.execute(stmt)
                         await session.commit()
 
-                    # 3. Feed to Strategies
-                    # In real app, we iterate over active strategies subscribed to this symbol
-                    # For now, we just broadcast to all for testing
-                    # Note: We usually only trade on 'Closed' candles to avoid repainting
-                    if data_point.is_closed:
-                        # Iterate all running strategies (simplified)
-                        # In reality, strategies are instances in the registry
-                        # For this demo, let's assume we have a way to get instances
-                        pass 
-                    
                     await callback(data_point)
+
+                    # 3. Feed to Strategies
+                    if data_point.is_closed:
+                        for strategy_id, strategy in strategy_registry._strategies.items():
+                            try:
+                                signal = await strategy.on_tick(data_point)
+                                
+                                from app.api.websockets import manager
+                                
+                                # Broadcast Log (if available)
+                                if hasattr(strategy, 'last_log') and strategy.last_log:
+                                    await manager.broadcast({
+                                        "type": "LOG",
+                                        "data": {
+                                            "time": datetime.now().strftime("%H:%M:%S"),
+                                            "msg": strategy.last_log,
+                                            "type": "info"
+                                        }
+                                    })
+                                    strategy.last_log = "" # Clear after sending
+                                
+                                # Broadcast Signal
+                                if signal:
+                                    print(f"SIGNAL: {signal}")
+                                    await manager.broadcast({
+                                        "type": "SIGNAL",
+                                        "data": signal
+                                    })
+                                    # Send success log too
+                                    await manager.broadcast({
+                                        "type": "LOG",
+                                        "data": {
+                                            "time": datetime.now().strftime("%H:%M:%S"),
+                                            "msg": f"Signal: {signal['action']} @ {signal['price']}",
+                                            "type": "success"
+                                        }
+                                    })
+                                    
+                            except Exception as e:
+                                print(f"Strategy Error {strategy_id}: {e}")
                     
                     # 4. Broadcast to Frontend via WebSocket
                     from app.api.websockets import manager
@@ -117,12 +147,31 @@ class MarketDataService:
         """
         Main entry point to start ingesting data.
         """
+        # 1. Initialize Strategies
+        from app.strategy.registry import strategy_registry
+        from app.strategy.implementations.lstm_strategy import LSTMStrategy
+        
+        # Register and Create Instance
+        strategy_registry.register_class("LSTMStrategy", LSTMStrategy)
+        
+        # Config (Point to trained model)
+        config = {
+            "symbol": "BTCUSDT",
+            "interval": "1m", # Match socket interval
+            "model_path": "app/ml/models/lstm_v1.pth",
+            "seq_length": 60
+        }
+        
+        try:
+            strategy_registry.create_instance("LSTMStrategy", "lstm_v1", config)
+            print("LSTM Strategy 'lstm_v1' initialized and running.")
+        except Exception as e:
+            print(f"Failed to init strategy: {e}")
+
         # Example callback just logging
-        async def process_kline(msg):
-            kline = msg['k']
-            is_closed = kline['x']
-            close_price = kline['c']
-            print(f"Update: {msg['s']} Price: {close_price} Closed: {is_closed}")
+        async def process_kline(data):
+            # print(f"Update: {data.symbol} Price: {data.close_price} Closed: {data.is_closed}")
+            pass
 
         # Start for BTCUSDT
         await self.start_kline_socket("BTCUSDT", "1m", process_kline)

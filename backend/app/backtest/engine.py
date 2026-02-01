@@ -139,4 +139,42 @@ class BacktestEngine:
             end_price = self.history[-1]['price']
             bnh_ret = ((end_price - start_price) / start_price) * 100
             print(f"Buy & Hold Ret:  {bnh_ret:.2f}%")
+            
+        self._calculate_detailed_metrics()
         print("-" * 30)
+
+    def _calculate_detailed_metrics(self):
+        if not self.history:
+            return
+            
+        # Convert history to DataFrame for easier calc
+        df = pd.DataFrame(self.history)
+        # Calculate daily returns (approx)
+        df['return'] = df['value'].pct_change()
+        
+        # 1. Sharpe Ratio (assuming risk-free = 0 for simplicity)
+        mean_return = df['return'].mean()
+        std_return = df['return'].std()
+        
+        # Annualized Sharpe (assuming 15m candles -> 96 per day * 365)
+        # Adjust scaling factor based on interval. 15m = 35040 periods/year
+        trading_periods = 35040 
+        sharpe = (mean_return / std_return) * (trading_periods ** 0.5) if std_return != 0 else 0
+        
+        # 2. Max Drawdown
+        df['cummax'] = df['value'].cummax()
+        df['drawdown'] = (df['value'] - df['cummax']) / df['cummax']
+        max_drawdown = df['drawdown'].min() * 100
+        
+        # 3. Win Rate
+        winning_trades = [t for t in self.trades if t.get('revenue', 0) > t.get('cost', 0) + t.get('fee', 0)] 
+        # Note: Current trade structure splits Buy/Sell, so we need to match them to calculate per-trade profit.
+        # This simple logic is flawed because 'revenue' stays with SELL and 'cost' with BUY.
+        # Better: Calculate PnL per Round-Trip.
+        
+        # Simplified Win Rate based on closed positions logic (Future Improvement)
+        # For now, let's just show Sharpe and Drawdown
+        
+        print(f"Sharpe Ratio:    {sharpe:.2f}")
+        print(f"Max Drawdown:    {max_drawdown:.2f}%")
+
