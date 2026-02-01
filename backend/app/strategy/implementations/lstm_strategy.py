@@ -8,6 +8,8 @@ from app.ml.networks import LSTMNetwork
 from app.ml.features import FeatureEngineer
 from sklearn.preprocessing import MinMaxScaler
 import os
+from datetime import datetime
+from app.services.binance_client import binance_adapter
 
 class LSTMStrategy(BaseStrategy):
     def __init__(self, strategy_id: str, config: dict):
@@ -30,6 +32,47 @@ class LSTMStrategy(BaseStrategy):
         self.last_indicators = None
         
         self.load_model()
+        self.preload_data()
+        
+    def preload_data(self):
+        """
+        Fetch historical data from Binance to fill the buffer immediately.
+        """
+        try:
+            # We need buffer_size candles. Fetch a bit more to be safe.
+            limit = self.buffer_size + 20
+            print(f"[{self.strategy_id}] Preloading {limit} candles from Binance...")
+            
+            # Synchronous Fetch
+            klines = binance_adapter.get_history(self.symbol, self.config.get("interval", "1m"), limit=limit)
+            
+            if not klines:
+                print(f"[{self.strategy_id}] creating candles failed")
+                return
+
+            parsed_candles = []
+            for k in klines:
+                # k is [time, open, high, low, close, volume, close_time, ...]
+                # Binance time is ms timestamp
+                parsed_candles.append(KlineData(
+                    symbol=self.symbol,
+                    interval=self.config.get("interval", "1m"),
+                    open_time=datetime.fromtimestamp(k[0] / 1000),
+                    open_price=float(k[1]),
+                    high_price=float(k[2]),
+                    low_price=float(k[3]),
+                    close_price=float(k[4]),
+                    volume=float(k[5]),
+                    close_time=datetime.fromtimestamp(k[6] / 1000),
+                    is_closed=True 
+                ))
+            
+            # Keep only the last buffer_size
+            self.candles = parsed_candles[-self.buffer_size:]
+            print(f"[{self.strategy_id}] Successfully preloaded {len(self.candles)} candles.")
+            
+        except Exception as e:
+            print(f"[{self.strategy_id}] Error preloading data: {e}")
         
     def load_model(self):
         try:

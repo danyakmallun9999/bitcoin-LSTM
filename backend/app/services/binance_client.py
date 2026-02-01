@@ -24,5 +24,10 @@ class BinanceAdapter:
     def get_price(self, symbol: str = "BTCUSDT"):
         return self.client.get_symbol_ticker(symbol=symbol)
 
+    def get_history(self, symbol: str, interval: str, limit: int = 100):
+        # Fetch historical klines (Synchronous)
+        # Docs: https://python-binance.readthedocs.io/en/latest/binance.html#binance.client.Client.get_klines
+        return self.client.get_klines(symbol=symbol, interval=interval, limit=limit)
+
 # Global instance for public access
 binance_adapter = BinanceAdapter()
