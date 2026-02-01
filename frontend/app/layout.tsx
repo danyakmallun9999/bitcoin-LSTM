@@ -26,16 +26,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#050505] text-zinc-100`}
-      >
+      <body className="antialiased bg-[#141414] text-gray-200 selection:bg-orange-500 selection:text-white font-light">
         <MarketProvider>
-          <div className="min-h-screen flex font-light" style={{ fontFamily: "var(--font-geist-sans)" }}>
+          {/* Sidebar and Main Layout Structure matching reference App shell */}
+          <div className="min-h-screen flex font-sans">
             <Sidebar />
             <main className="pl-20 w-full relative">
-              {/* Subtle Grid Background moved here from page.tsx */}
-              {/* Subtle Grid Background Removed for Minimalism */}
-              <div className="absolute inset-0 z-0"></div>
               {children}
             </main>
           </div>
