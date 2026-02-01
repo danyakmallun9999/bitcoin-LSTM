@@ -36,8 +36,8 @@ export function MarketProvider({ children }: { children: ReactNode }) {
     const value = {
         timeframe,
         setTimeframe,
-        ...marketData,
         ...botManager,
+        ...marketData,
         startTime: botManager.startTime
     };
 

@@ -194,41 +194,50 @@ export default function BotDashboard() {
                   <tbody className="text-gray-300 text-sm font-light">
                     {activeTrades.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-gray-500 italic text-xs">
-                          No active trades running. System idle.
+                        <td colSpan={5} className="py-20 text-center text-gray-500 italic text-xs">
+                          <div className="flex flex-col items-center gap-2 opacity-40">
+                            <Activity size={32} />
+                            <span>No active trades running. System idle.</span>
+                          </div>
                         </td>
                       </tr>
                     ) : (
                       activeTrades.map((trade) => (
                         <tr key={trade.id} className="border-b border-[#2a2a2a] hover:bg-[#252525] transition-colors group">
-                          <td className="py-4 pl-2">
+                          <td className="py-5 pl-2">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-sm bg-[#252525] border border-[#333] flex items-center justify-center font-bold text-xs text-gray-400 font-nums group-hover:border-orange-500/30 group-hover:text-orange-500 transition-colors">
-                                {trade.pair.split('/')[0].substring(0, 1)}
+                              <div className="w-10 h-10 rounded-sm bg-[#252525] border border-[#333] flex items-center justify-center font-bold text-xs text-gray-400 font-nums group-hover:border-purple-500/30 group-hover:text-purple-500 transition-colors">
+                                {trade.pair.split('/')[0]}
                               </div>
                               <div className="flex flex-col">
                                 <span className="font-bold text-white tracking-wide text-xs">{trade.pair}</span>
-                                <span className="text-[10px] text-gray-500 font-nums">{trade.current}</span>
+                                <span className="text-[10px] text-gray-500 font-nums">Qty: {trade.quantity?.toFixed(4)}</span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 text-center">
+                          <td className="py-5 text-center">
                             <span className={`text-[9px] font-bold px-2 py-0.5 rounded-sm tracking-widest uppercase ${trade.type === 'LONG' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
                               {trade.type}
                             </span>
                           </td>
-                          <td className={`py-4 text-right font-bold font-nums text-sm ${trade.pnl.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+                          <td className={`py-5 text-right font-bold font-nums text-sm ${trade.pnl.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
                             {trade.pnl}
                           </td>
-                          <td className="py-4 pl-6 text-gray-400 font-nums text-xs">
-                            {trade.entry_price || "-"}
+                          <td className="py-5 pl-6">
+                            <div className="flex flex-col items-start">
+                              <span className="text-gray-400 font-nums text-xs">${trade.entry_price?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                              <span className="text-[9px] text-gray-600 font-bold uppercase tracking-tighter">Current: ${trade.current?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            </div>
                           </td>
-                          <td className="py-4 text-right">
-                            <button
-                              className="bg-[#252525] hover:bg-[#333] border border-[#333] text-gray-400 p-2 rounded-sm transition-all hover:text-orange-500"
-                            >
-                              <Search size={14} />
-                            </button>
+                          <td className="py-5 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                className="bg-[#252525] hover:bg-[#333] border border-[#333] text-gray-400 p-2 rounded-sm transition-all hover:text-purple-500"
+                                title="Analyze"
+                              >
+                                <Activity size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))

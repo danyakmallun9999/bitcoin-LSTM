@@ -33,21 +33,14 @@ export const useBotManager = () => {
     const [isRunning, setIsRunning] = useState(true);
     const [startTime, setStartTime] = useState<string | null>(null);
     const [stats, setStats] = useState<BotStats | null>(null);
-    const [balance, setBalance] = useState<AccountBalance | null>(null);
-    const [activeTrades, setActiveTrades] = useState<ActiveTrade[]>([]);
-
     // Fetch initial data
     useEffect(() => {
         fetchStatus();
         fetchStats();
-        fetchBalance();
-        fetchActiveTrades();
 
         // Poll every 5s
         const interval = setInterval(() => {
             fetchStats();
-            fetchBalance();
-            fetchActiveTrades();
         }, 5000);
 
         return () => clearInterval(interval);
@@ -73,22 +66,6 @@ export const useBotManager = () => {
         } catch (e) { console.error(e); }
     };
 
-    const fetchBalance = async () => {
-        try {
-            const res = await fetch(`${API_BASE}/account/balance`);
-            const data = await res.json();
-            setBalance(data);
-        } catch (e) { console.error(e); }
-    };
-
-    const fetchActiveTrades = async () => {
-        try {
-            const res = await fetch(`${API_BASE}/trades/active`);
-            const data = await res.json();
-            setActiveTrades(data);
-        } catch (e) { console.error(e); }
-    };
-
     const toggleBot = async () => {
         const action = isRunning ? "stop" : "start";
         try {
@@ -107,8 +84,6 @@ export const useBotManager = () => {
         isRunning,
         startTime,
         stats,
-        balance,
-        activeTrades,
         toggleBot,
         refresh: fetchStatus
     };

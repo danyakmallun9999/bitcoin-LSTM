@@ -23,8 +23,10 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
     const [logs, setLogs] = useState<LogData[]>([]);
     const [latestSignal, setLatestSignal] = useState<any>(null);
     const [indicators, setIndicators] = useState<any>(null);
+    const [activeTrades, setActiveTrades] = useState<any[]>([]);
+    const [balance, setBalance] = useState<any>(null);
 
-    // 1. Fetch Initial History
+    // Fetch initial history
     useEffect(() => {
         const fetchHistory = async () => {
             try {
@@ -32,9 +34,7 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     setHistory(data);
-                    if (data.length > 0) {
-                        setPrice(data[data.length - 1].price);
-                    }
+                    if (data.length > 0) setPrice(data[data.length - 1].price);
                 }
             } catch (e) {
                 console.error("Failed to fetch history", e);
@@ -42,6 +42,25 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
         };
         fetchHistory();
     }, [symbol, interval]);
+
+    // Initial Fetch for trades and balance to reduce layout shift
+    useEffect(() => {
+        const fetchInitial = async () => {
+            try {
+                const [tradesRes, balanceRes] = await Promise.all([
+                    fetch(`http://localhost:8000/api/v1/trades/active`),
+                    fetch(`http://localhost:8000/api/v1/account/balance`)
+                ]);
+                const trades = await tradesRes.json();
+                const bal = await balanceRes.json();
+                setActiveTrades(trades);
+                setBalance(bal);
+            } catch (e) {
+                console.error("Initial fetch failed", e);
+            }
+        };
+        fetchInitial();
+    }, []);
 
     const { lastJsonMessage, readyState } = useWebSocket(SOCKET_URL, {
         shouldReconnect: (closeEvent) => true,
@@ -64,25 +83,19 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
                     const lastTime = new Date(lastItem.time).getTime();
                     const tickTime = new Date(tick.time).getTime();
 
-                    // Milliseconds map
                     const intervalMap: Record<string, number> = {
                         '1m': 60 * 1000,
                         '15m': 15 * 60 * 1000,
                         '1H': 60 * 60 * 1000,
                         '4H': 4 * 60 * 60 * 1000
                     };
-                    // Default to 1m if unknown
                     const threshold = intervalMap[interval] || 60000;
 
-                    // If tick is within the current interval bucket (approx)
-                    // We assume valid sequential data. If tick is newer but close, update last candle.
-                    // Ideally we'd use robust "start of interval" alignment, but "distance from last" is a good proxy for now.
                     if (tickTime - lastTime < threshold) {
                         const newHistory = [...prev];
                         newHistory[newHistory.length - 1] = tick;
                         return newHistory;
                     } else {
-                        // New candle/point
                         const newHistory = [...prev, tick];
                         if (newHistory.length > 200) return newHistory.slice(1);
                         return newHistory;
@@ -101,6 +114,14 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
             if (message.type === "INDICATORS") {
                 setIndicators(message.data);
             }
+
+            if (message.type === "ACTIVE_TRADES") {
+                setActiveTrades(message.data);
+            }
+
+            if (message.type === "BALANCE") {
+                setBalance(message.data);
+            }
         }
     }, [lastJsonMessage, symbol, interval]);
 
@@ -112,5 +133,5 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
     }[readyState];
 
-    return { price, history, logs, connectionStatus, latestSignal, indicators };
+    return { price, history, logs, connectionStatus, latestSignal, indicators, activeTrades, balance };
 };

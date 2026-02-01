@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     BINANCE_API_KEY: str | None = None
     BINANCE_SECRET_KEY: str | None = None
     
+    # Execution Mode
+    REAL_TRADING_ENABLED: bool = False # Default to Paper Trading
+    BINANCE_TESTNET: bool = True # Default to True for safety
+
     class Config:
         env_file = ".env"
 

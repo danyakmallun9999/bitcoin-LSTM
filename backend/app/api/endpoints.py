@@ -129,39 +129,60 @@ async def get_balance():
         "currency": "USD",
         "pnl_24h": round(pnl_percent, 2), 
         "pnl_amount": round(total_pnl, 2),
-        "invested_amount": round(invested_amount, 2)
+        "invested_amount": round(invested_amount, 2),
+        "is_real": state.get('is_real', False)
     }
 
 @router.get("/trades/active")
 async def get_active_trades():
     from app.services.trade_executor import TradeExecutor
+    from app.db.session import AsyncSessionLocal
+    from app.db.models import SystemConfig
     
+    # Get Active Pair from Config
+    symbol = "BTCUSDT"
+    async with AsyncSessionLocal() as session:
+        config = await session.execute(select(SystemConfig).where(SystemConfig.id == 1))
+        config_obj = config.scalar_one_or_none()
+        if config_obj:
+            symbol = config_obj.active_pair
+
     state = await TradeExecutor.calculate_wallet_state()
+    pos = state['position']
+    avg_entry = state['avg_entry']
         
-    if state['position'] <= 0.000001:
+    if abs(pos) <= 0.000001:
         return []
         
     # Get Current Price
-    current_price = state['avg_entry']
+    current_price = avg_entry
     try:
-        data = await binance_adapter.get_price("BTCUSDT")
+        data = await binance_adapter.get_price(symbol)
         current_price = float(data['price'])
     except:
         pass
         
-    pnl_val = (current_price - state['avg_entry']) * state['position']
-    pnl_pct = ((current_price - state['avg_entry']) / state['avg_entry']) * 100
+    is_long = pos > 0
+    if is_long:
+        pnl_pct = ((current_price - avg_entry) / avg_entry) * 100
+    else:
+        # Short PnL: (Entry - Current) / Entry
+        pnl_pct = ((avg_entry - current_price) / avg_entry) * 100
     
     # Construct a synthetic "Active Trade" object based on aggregated position
     return [{
         "id": "HOLDING",
-        "pair": "BTC/USDT",
-        "type": "LONG",
-        "entry": round(state['avg_entry'], 2),
+        "pair": f"{symbol[:3]}/{symbol[3:]}" if "USDT" in symbol else symbol,
+        "symbol": symbol,
+        "type": "LONG" if is_long else "SHORT",
+        "entry": avg_entry,
+        "entry_price": avg_entry, # Duplicate for compatibility
         "current": current_price,
+        "pnl_percent": round(pnl_pct, 4),
         "pnl": f"{'+' if pnl_pct >= 0 else ''}{pnl_pct:.2f}%", 
         "status": "OPEN",
-        "quantity": state['position']
+        "quantity": abs(pos),
+        "value": abs(pos) * current_price
     }]
 
 @router.get("/stats")
@@ -340,3 +361,37 @@ async def get_trade_history(limit: int = 50, offset: int = 0):
             "pnl": "0.00%" # Todo: Real PnL logic
         })
     return history
+
+# --- Backtesting ---
+from app.schemas.market_data import BacktestRequest, BacktestResponse
+
+@router.post("/backtest/run", response_model=BacktestResponse)
+async def run_backtest(req: BacktestRequest):
+    from app.backtest.engine import BacktestEngine
+    from app.strategy.implementations.lstm_strategy import LSTMStrategy
+    
+    # 1. Fetch Bulk History
+    print(f"Fetching bulk history for {req.symbol} ({req.interval}) from {req.start_str}...")
+    klines = binance_adapter.get_bulk_history(req.symbol, req.interval, req.start_str)
+    
+    if not klines:
+        return {"error": "Failed to fetch historical data"}
+
+    # 2. Setup Engine
+    # Load some config from current system if needed, or use defaults
+    config = {
+        "symbol": req.symbol,
+        "interval": req.interval,
+        "sl_percent": 2.0,
+        "tp_percent": 4.0
+    }
+    
+    # For now support LSTM only or map names to classes
+    engine = BacktestEngine(LSTMStrategy, config)
+    
+    # 3. Run
+    import pandas as pd
+    df = pd.DataFrame(klines)
+    result = await engine.run(df)
+    
+    return result

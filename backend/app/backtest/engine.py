@@ -9,172 +9,177 @@ class BacktestEngine:
         self.strategy_class = strategy_class
         self.config = config
         self.initial_capital = initial_capital
+        
+        # State
         self.balance = initial_capital
-        self.position = 0.0 # Asset amount
+        self.position = 0.0 # Positive for Long, Negative for Short
+        self.avg_entry = 0.0
+        
         self.portfolio_value = initial_capital
         self.trades: List[Dict] = []
-        self.history: List[Dict] = [] # Track portfolio value over time
+        self.history: List[Dict] = [] 
         
+        # Risk Params
+        self.sl_pct = config.get("sl_percent", 2.0) / 100
+        self.tp_pct = config.get("tp_percent", 4.0) / 100
+
     async def run(self, data: pd.DataFrame):
         """
         Runs the backtest on the provided DataFrame.
-        DataFrame must have: close, open, high, low, volume, open_time (datetime)
         """
-        print(f"Starting Backtest with ${self.initial_capital:.2f}...")
+        print(f"Starting Backtest ({self.config.get('symbol')}) with ${self.initial_capital:.2f}...")
         
-        # Initialize Strategy
-        # We need a dummy ID
         strategy = self.strategy_class(strategy_id="backtest_v1", config=self.config)
         
-        # Simulate Loop
         for index, row in data.iterrows():
-            # Create KlineData object
-            # Assuming row has standard columns from our download script
+            # Create KlineData
             kline = KlineData(
                 symbol=self.config.get("symbol", "BTCUSDT"),
-                interval=self.config.get("interval", "15m"),
-                open_time=pd.to_datetime(row['open_time']),
-                open_price=row['open'],
-                high_price=row['high'],
-                low_price=row['low'],
-                close_price=row['close'],
-                volume=row['volume'],
-                close_time=pd.to_datetime(row['close_time']),
-                is_closed=True # In backtest, we iterate closed candles
+                interval=self.config.get("interval", "1m"),
+                open_time=pd.to_datetime(row[0], unit='ms'), # Open time
+                open_price=float(row[1]),
+                high_price=float(row[2]),
+                low_price=float(row[3]),
+                close_price=float(row[4]),
+                volume=float(row[5]),
+                close_time=pd.to_datetime(row[6], unit='ms'), # Close time
+                is_closed=True
             )
             
-            # 1. Update Portfolio Value (Mark to Market)
             current_price = kline.close_price
+            
+            # 1. Update Portfolio Value (Mark to Market)
+            # Long: Value = balance + (pos * current)
+            # Short: Value = balance - abs(pos)*current (but cash increased on sell)
+            # Replay-style: Equity = balance + position_value
+            # Position Value = pos * current
+            # If pos is negative (short), it correctly reduces value as current price increases.
             self.portfolio_value = self.balance + (self.position * current_price)
+            
             self.history.append({
                 "time": kline.close_time,
                 "value": self.portfolio_value,
                 "price": current_price
             })
             
-            # 2. Get Signal
-            signal = await strategy.on_tick(kline)
-            
-            # 3. Execute Trade (Simplified)
-            if signal:
-                self._execute_trade(signal, kline.close_time)
+            # 2. Risk Management (Check SL/TP)
+            risk_signal = self._check_risk(current_price)
+            if risk_signal:
+                self._execute_trade(risk_signal, kline.close_time, "RISK_ENGINE")
+            else:
+                # 3. Strategy Signal (only if no risk action)
+                signal = await strategy.on_tick(kline)
+                if signal:
+                    self._execute_trade(signal, kline.close_time, "STRATEGY")
                 
-        self._generate_report()
+        return self._generate_report()
     
-    def _execute_trade(self, signal: TradeSignal, timestamp: datetime):
+    def _check_risk(self, current_price: float) -> Optional[Dict]:
+        if abs(self.position) < 0.000001:
+            return None
+            
+        pnl_pct = 0.0
+        action = ""
+        
+        if self.position > 0: # Long
+            pnl_pct = (current_price - self.avg_entry) / self.avg_entry
+            if pnl_pct <= -self.sl_pct:
+                action = "SELL"
+            elif pnl_pct >= self.tp_pct:
+                action = "SELL"
+        elif self.position < 0: # Short
+            pnl_pct = (self.avg_entry - current_price) / self.avg_entry
+            if pnl_pct <= -self.sl_pct:
+                action = "BUY"
+            elif pnl_pct >= self.tp_pct:
+                action = "BUY"
+                
+        if action:
+            return {
+                "action": action,
+                "price": current_price,
+                "reason": "SL" if pnl_pct < 0 else "TP"
+            }
+        return None
+
+    def _execute_trade(self, signal: Dict, timestamp: datetime, source: str):
         price = signal['price']
         action = signal['action']
+        commission = 0.001 # 0.1%
         
-        # Simple Logic: All-in or Fixed Amount? 
-        # Let's do fixed 10% of portfolio or similar. 
-        # For this demo: 1 Unit of Asset check
-        trade_size = 0.0 # Amount of BTC
-        
-        # Assume we trade with 95% of available cash on BUY, or Sell 100% position on SELL
-        commission = 0.001 # 0.1% Binance fee
+        qty = 0.0
         
         if action == "BUY":
-            if self.balance > 0:
-                # Buy as much as possible
-                amount_to_spend = self.balance * 0.99 # Leave some dust
-                trade_size = amount_to_spend / price
-                cost = trade_size * price
+            if self.position < -0.000001:
+                # Cover Short
+                qty = abs(self.position)
+                cost = qty * price
                 fee = cost * commission
-                
                 self.balance -= (cost + fee)
-                self.position += trade_size
+                self.position = 0
+                self.avg_entry = 0
+            elif abs(self.position) < 0.000001:
+                # Open Long
+                qty = (self.balance * 0.95) / price
+                cost = qty * price
+                fee = cost * commission
+                self.balance -= (cost + fee)
+                self.position = qty
+                self.avg_entry = price
                 
-                self.trades.append({
-                    "time": timestamp,
-                    "action": "BUY",
-                    "price": price,
-                    "size": trade_size,
-                    "cost": cost,
-                    "fee": fee,
-                    "reason": signal['reason']
-                })
-                # print(f"BUY at {price:.2f}")
-
         elif action == "SELL":
-            if self.position > 0.00001: # Epsilon
-                # Sell all
-                trade_size = self.position
-                revenue = trade_size * price
+            if self.position > 0.000001:
+                # Close Long
+                qty = self.position
+                revenue = qty * price
                 fee = revenue * commission
-                
                 self.balance += (revenue - fee)
-                self.position = 0.0
-                
-                self.trades.append({
-                    "time": timestamp,
-                    "action": "SELL",
-                    "price": price,
-                    "size": trade_size,
-                    "revenue": revenue,
-                    "fee": fee,
-                    "reason": signal['reason']
-                })
-                # print(f"SELL at {price:.2f}")
+                self.position = 0
+                self.avg_entry = 0
+            elif abs(self.position) < 0.000001:
+                # Open Short
+                qty = (self.balance * 0.95) / price
+                revenue = qty * price
+                fee = revenue * commission
+                self.balance += (revenue - fee)
+                self.position = -qty
+                self.avg_entry = price
+
+        if qty > 0:
+            self.trades.append({
+                "time": timestamp,
+                "action": action,
+                "price": price,
+                "qty": qty,
+                "source": source,
+                "reason": signal.get('reason', 'N/A')
+            })
 
     def _generate_report(self):
-        print("-" * 30)
-        print("BACKTEST RESULT")
-        print("-" * 30)
-        print(f"Initial Capital: ${self.initial_capital:.2f}")
-        print(f"Final Value:     ${self.portfolio_value:.2f}")
-        
         pnl = self.portfolio_value - self.initial_capital
         pnl_pct = (pnl / self.initial_capital) * 100
         
-        print(f"Total PnL:       ${pnl:.2f} ({pnl_pct:.2f}%)")
-        print(f"Total Trades:    {len(self.trades)}")
-        
-        # Win Rate?
-        # Requires matching Buy/Sell pairs, slightly complex for simpler engine.
-        print("-" * 30)
-        
-        # Simple Buy & Hold comparison
-        if self.history:
-            start_price = self.history[0]['price']
-            end_price = self.history[-1]['price']
-            bnh_ret = ((end_price - start_price) / start_price) * 100
-            print(f"Buy & Hold Ret:  {bnh_ret:.2f}%")
-            
-        self._calculate_detailed_metrics()
-        print("-" * 30)
-
-    def _calculate_detailed_metrics(self):
-        if not self.history:
-            return
-            
-        # Convert history to DataFrame for easier calc
+        # Drawdown
         df = pd.DataFrame(self.history)
-        # Calculate daily returns (approx)
-        df['return'] = df['value'].pct_change()
-        
-        # 1. Sharpe Ratio (assuming risk-free = 0 for simplicity)
-        mean_return = df['return'].mean()
-        std_return = df['return'].std()
-        
-        # Annualized Sharpe (assuming 15m candles -> 96 per day * 365)
-        # Adjust scaling factor based on interval. 15m = 35040 periods/year
-        trading_periods = 35040 
-        sharpe = (mean_return / std_return) * (trading_periods ** 0.5) if std_return != 0 else 0
-        
-        # 2. Max Drawdown
         df['cummax'] = df['value'].cummax()
         df['drawdown'] = (df['value'] - df['cummax']) / df['cummax']
-        max_drawdown = df['drawdown'].min() * 100
+        max_dd = df['drawdown'].min() * 100
         
-        # 3. Win Rate
-        winning_trades = [t for t in self.trades if t.get('revenue', 0) > t.get('cost', 0) + t.get('fee', 0)] 
-        # Note: Current trade structure splits Buy/Sell, so we need to match them to calculate per-trade profit.
-        # This simple logic is flawed because 'revenue' stays with SELL and 'cost' with BUY.
-        # Better: Calculate PnL per Round-Trip.
+        # Volatility & Sharpe
+        df['ret'] = df['value'].pct_change()
+        sharpe = (df['ret'].mean() / df['ret'].std()) * (525600 ** 0.5) if df['ret'].std() != 0 else 0
         
-        # Simplified Win Rate based on closed positions logic (Future Improvement)
-        # For now, let's just show Sharpe and Drawdown
+        report = {
+            "initial_capital": self.initial_capital,
+            "final_value": self.portfolio_value,
+            "total_pnl": pnl,
+            "pnl_pct": pnl_pct,
+            "max_drawdown": max_dd,
+            "sharpe": sharpe,
+            "num_trades": len(self.trades),
+            "trades": self.trades[-10:], # Last 10 trades for info
+            "history": self.history[::max(1, len(self.history)//100)] # Downsampled history (100 pts)
+        }
         
-        print(f"Sharpe Ratio:    {sharpe:.2f}")
-        print(f"Max Drawdown:    {max_drawdown:.2f}%")
-
+        print(f"Backtest Completed. PnL: {pnl_pct:.2f}% | Drawdown: {max_dd:.2f}%")
+        return report

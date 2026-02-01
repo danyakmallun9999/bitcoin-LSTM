@@ -33,3 +33,20 @@ class TradeData(BaseModel):
     quantity: float
     time: datetime
     is_buyer_maker: bool
+
+class BacktestRequest(BaseModel):
+    symbol: str = "BTCUSDT"
+    interval: str = "1h"
+    start_str: str = "1 month ago UTC"
+    strategy_name: str = "LSTMStrategy"
+
+class BacktestResponse(BaseModel):
+    initial_capital: float
+    final_value: float
+    total_pnl: float
+    pnl_pct: float
+    max_drawdown: float
+    sharpe: float
+    num_trades: int
+    history: list # Sampled history for chart
+

@@ -131,7 +131,31 @@ class MarketDataService:
 
                     await callback(data_point)
 
-                    # 3. Feed to Strategies
+                    # 3. Risk Management Engine (Check SL/TP on every tick)
+                    from app.services.trade_executor import TradeExecutor
+                    from app.api.websockets import manager # Import manager here for risk_event and trade execution
+                    risk_event = await TradeExecutor.check_risk_management(data_point.close_price, data_point.symbol)
+                    if risk_event:
+                        # Broadcast the risk closure event
+                        await manager.broadcast({
+                            "type": "LOG",
+                            "data": {
+                                "time": datetime.now().strftime("%H:%M:%S"),
+                                "msg": f"RISK ENGINE: {risk_event}",
+                                "type": "error"
+                            }
+                        })
+                        # Refresh active trades after risk closure
+                        try:
+                            from app.api.endpoints import get_active_trades
+                            current_trades = await get_active_trades()
+                            await manager.broadcast({
+                                "type": "ACTIVE_TRADES",
+                                "data": current_trades
+                            })
+                        except: pass
+
+                    # 4. Feed to Strategies
                     if data_point.is_closed:
                         for strategy_id, strategy in strategy_registry._strategies.items():
                             try:
@@ -175,8 +199,7 @@ class MarketDataService:
                                         }
                                     })
                                     
-                                    # 5. Execute Trade (Auto-Trading)
-                                    from app.services.trade_executor import TradeExecutor
+                                    # 6. Execute Trade (Auto-Trading)
                                     trade = await TradeExecutor.execute_signal(signal)
                                     
                                     if trade:
@@ -192,7 +215,7 @@ class MarketDataService:
                             except Exception as e:
                                 print(f"Strategy Error {strategy_id}: {e}")
                     
-                    # 4. Broadcast to Frontend via WebSocket
+                    # 5. Broadcast to Frontend via WebSocket
                     from app.api.websockets import manager
                     # Convert to dict (pydantic model dump)
                     # Use jsonable_encoder if needed, or just dict(). 
