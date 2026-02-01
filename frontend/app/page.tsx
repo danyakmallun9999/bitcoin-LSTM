@@ -66,7 +66,7 @@ export default function BotDashboard() {
                       </span>
                     </div>
                     <div className="flex items-baseline gap-3">
-                      <p className="font-nums font-bold text-4xl text-white tracking-tight">${price.toFixed(2)}</p>
+                      <p className="font-nums font-bold text-4xl text-white tracking-tight">${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       <span className="font-nums text-purple-400 text-sm flex items-center font-bold">
                         <ArrowUpRight size={16} className="mr-1" /> +1.24%
                       </span>
@@ -109,7 +109,7 @@ export default function BotDashboard() {
                         tickLine={false}
                         tick={{ fontSize: 12, fill: '#9ca3af', fontFamily: 'JetBrains Mono' }}
                         dx={-10}
-                        tickFormatter={(val) => `$${val}`}
+                        tickFormatter={(val) => `$${val.toLocaleString()}`}
                       />
                       <Tooltip contentStyle={{ backgroundColor: '#222', border: '1px solid #444', borderRadius: '4px', fontFamily: 'JetBrains Mono' }} itemStyle={{ color: '#fff', fontSize: '12px' }} labelStyle={{ color: '#888', fontSize: '10px' }} />
                       <Area type="monotone" dataKey="price" stroke="#a78bfa" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
