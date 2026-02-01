@@ -176,6 +176,31 @@ export default function SettingsPage() {
                     {saving ? 'Saving Config...' : <><Save size={18} /> Save Configuration</>}
                 </button>
 
+                {/* DANGER ZONE */}
+                <div className="bg-[#121214] border border-red-900/30 rounded-sm p-6 mt-8">
+                    <h2 className="text-red-400 font-semibold text-lg mb-4 flex items-center gap-2">
+                        <ShieldAlert size={18} /> Danger Zone
+                    </h2>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-zinc-400 text-sm">Reset all trading history and balance.</p>
+                            <p className="text-zinc-600 text-xs">This action cannot be undone. Initial capital will reset to $10,000.</p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (confirm("ARE YOU SURE? This will delete all trade history and reset your balance.")) {
+                                    fetch('http://localhost:8000/api/v1/system/reset', { method: 'POST' })
+                                        .then(() => alert("System Reset Successful!"))
+                                        .catch(err => alert("Reset Failed"));
+                                }
+                            }}
+                            className="px-4 py-2 bg-red-900/20 hover:bg-red-900/40 text-red-500 border border-red-900/50 rounded-sm text-sm font-semibold transition-all"
+                        >
+                            Reset System
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
     );

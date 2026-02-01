@@ -21,6 +21,7 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
     const [price, setPrice] = useState<number>(0);
     const [history, setHistory] = useState<TickData[]>([]);
     const [logs, setLogs] = useState<LogData[]>([]);
+    const [latestSignal, setLatestSignal] = useState<any>(null);
 
     // 1. Fetch Initial History
     useEffect(() => {
@@ -64,6 +65,10 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
             if (message.type === "LOG") {
                 setLogs((prev) => [message.data, ...prev].slice(0, 50));
             }
+
+            if (message.type === "SIGNAL") {
+                setLatestSignal({ ...message.data, receivedAt: Date.now() });
+            }
         }
     }, [lastJsonMessage, symbol]);
 
@@ -75,5 +80,5 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
     }[readyState];
 
-    return { price, history, logs, connectionStatus };
+    return { price, history, logs, connectionStatus, latestSignal };
 };

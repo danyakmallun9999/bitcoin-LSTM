@@ -257,6 +257,18 @@ async def get_trade_history(limit: int = 50, offset: int = 0):
         })
     return history
 
+@router.post("/system/reset")
+async def reset_system():
+    from app.db.session import AsyncSessionLocal
+    from app.db.models import TradeLog
+    from sqlalchemy import delete
+    
+    async with AsyncSessionLocal() as session:
+        await session.execute(delete(TradeLog))
+        await session.commit()
+        
+    return {"status": "reset", "message": "All trade data cleared. System reset to initial state."}
+
 # --- Configuration & Manual Trading ---
 from app.schemas.config import SystemConfigSchema, ManualTradeRequest
 
