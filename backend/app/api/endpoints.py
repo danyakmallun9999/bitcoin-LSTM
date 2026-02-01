@@ -79,7 +79,12 @@ async def control_bot(control: BotControl):
 async def get_bot_status():
     from app.services.market_data import market_data_service
     status = "running" if market_data_service._running else "stopped"
-    return {"status": status, "uptime": "0h 42m"} # Todo: Calculate real uptime 
+    start_time = market_data_service.start_time.isoformat() if market_data_service.start_time else None
+    return {
+        "status": status, 
+        "uptime": market_data_service.get_uptime(),
+        "start_time": start_time
+    } 
 
 # --- Wallet Helper ---
 

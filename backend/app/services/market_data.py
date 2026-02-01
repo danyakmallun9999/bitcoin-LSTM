@@ -12,6 +12,7 @@ class MarketDataService:
         self.active_streams = []
         self._running = False
         self._ingestion_task = None
+        self.start_time = None
 
     async def start(self):
         if self._running:
@@ -19,6 +20,8 @@ class MarketDataService:
         logger.info("Starting Market Data Service...")
         self._running = True
         self._ingestion_task = asyncio.create_task(self.ingest_realtime_data())
+        from datetime import datetime
+        self.start_time = datetime.now()
 
     async def stop(self):
         if not self._running:
@@ -33,6 +36,24 @@ class MarketDataService:
                 pass
             self._ingestion_task = None
         self.active_streams = []
+        self.start_time = None
+
+    def get_uptime(self) -> str:
+        if not self._running or not self.start_time:
+            return "0h 0m"
+        
+        from datetime import datetime
+        now = datetime.now()
+        diff = now - self.start_time
+        
+        hours, remainder = divmod(diff.seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+        
+        # Add days if needed
+        if diff.days > 0:
+            return f"{diff.days}d {hours}h {minutes}m"
+            
+        return f"{hours}h {minutes}m"
 
     async def start_kline_socket(self, symbol: str, interval: str, callback: Callable):
         """

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useGlobalState } from "@/context/MarketContext";
 import Header from "@/components/Header";
 import PageTransition from "@/components/PageTransition";
+import LSTMPredictionCard from "@/components/LSTMPredictionCard";
 import {
   Activity,
   Play,
@@ -225,41 +226,8 @@ export default function BotDashboard() {
               <div className="grid grid-cols-2 gap-6">
 
                 {/* Market Sentiment */}
-                <motion.div variants={itemVariants} className="bg-[#121214] border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                      <TrendingUp size={14} /> AI Sentiment
-                    </h3>
-                    {indicators && (
-                      <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${indicators.sentiment === 'BULLISH' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                        {indicators.sentiment}
-                      </span>
-                    )}
-                  </div>
-
-                  {indicators ? (
-                    <div className="flex gap-6 items-end">
-                      <div className="flex-1">
-                        <div className="flex items-baseline gap-2 mb-2">
-                          <span className="text-3xl font-bold text-white tracking-tight">{(indicators.confidence / 10).toFixed(1)}%</span>
-                          <span className="text-zinc-500 text-xs font-medium">Confidence</span>
-                        </div>
-                        <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(indicators.confidence, 100)}%` }}
-                            transition={{ duration: 1 }}
-                            className={`h-full rounded-full ${indicators.sentiment === 'BULLISH' ? 'bg-green-500' : 'bg-red-500'}`}
-                          />
-                        </div>
-                      </div>
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${indicators.sentiment === 'BULLISH' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
-                        {indicators.sentiment === 'BULLISH' ? <ArrowUpRight size={24} /> : <TrendingDown size={24} />}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-20 flex items-center justify-center text-zinc-600 text-sm animate-pulse">Analyzing Market...</div>
-                  )}
+                <motion.div variants={itemVariants} className="h-full">
+                  <LSTMPredictionCard indicators={indicators} />
                 </motion.div>
 
                 {/* Technicals */}
