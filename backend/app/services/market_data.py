@@ -97,6 +97,21 @@ class MarketDataService:
                         pass 
                     
                     await callback(data_point)
+                    
+                    # 4. Broadcast to Frontend via WebSocket
+                    from app.api.websockets import manager
+                    # Convert to dict (pydantic model dump)
+                    # Use jsonable_encoder if needed, or just dict(). 
+                    # datetime might need serialization
+                    payload = {
+                        "type": "TICK",
+                        "data": {
+                            "symbol": data_point.symbol,
+                            "price": data_point.close_price,
+                            "time": data_point.close_time.isoformat()
+                        }
+                    }
+                    await manager.broadcast(payload)
 
     async def ingest_realtime_data(self):
         """

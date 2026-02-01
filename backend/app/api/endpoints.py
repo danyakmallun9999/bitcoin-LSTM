@@ -14,3 +14,16 @@ async def get_price(symbol: str):
         return {"symbol": symbol, "price": data['price']}
     except Exception as e:
         return {"error": str(e)}
+
+from fastapi import WebSocket, WebSocketDisconnect
+from app.api.websockets import manager
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive, maybe receive commands from frontend?
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)

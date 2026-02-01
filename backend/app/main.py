@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.core.config import settings
@@ -6,10 +7,11 @@ from app.services.market_data import market_data_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Initialize connections
+    # Startup: Initialize connections & Start Ingestion
+    task = asyncio.create_task(market_data_service.ingest_realtime_data())
     yield
     # Shutdown: Close connections
-    # await market_data_service.stop()
+    # task.cancel()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
