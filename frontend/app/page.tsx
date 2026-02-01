@@ -117,7 +117,7 @@ export default function BotDashboard() {
                   {/* Chart Area */}
                   <div className="h-[420px] w-full mt-4 pr-2 relative group">
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <AreaChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
@@ -137,20 +137,12 @@ export default function BotDashboard() {
 
                         {/* Price Axis */}
                         <YAxis
-                          yAxisId="right"
                           domain={['auto', 'auto']}
                           axisLine={false}
                           tickLine={false}
                           orientation="right"
                           tick={{ fontSize: 10, fill: '#52525b', fontFamily: 'JetBrains Mono' }}
                           tickFormatter={(val) => `$${val}`}
-                        />
-
-                        {/* Volume Axis (Hidden) */}
-                        <YAxis
-                          yAxisId="left"
-                          orientation="left"
-                          hide={true}
                         />
 
                         <Tooltip
@@ -165,12 +157,6 @@ export default function BotDashboard() {
                                       <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
                                       <span className="text-white font-bold font-mono text-sm">${Number(payload[0].value).toFixed(2)}</span>
                                     </div>
-                                    {payload[1] && (
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-600"></div>
-                                        <span className="text-zinc-400 font-mono text-xs">Vol: {Number(payload[1].value).toFixed(4)}</span>
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                               );
@@ -181,7 +167,6 @@ export default function BotDashboard() {
 
                         {/* Current Price Line */}
                         <ReferenceLine
-                          yAxisId="right"
                           y={price}
                           stroke="#f97316"
                           strokeDasharray="3 3"
@@ -197,18 +182,8 @@ export default function BotDashboard() {
                           />
                         </ReferenceLine>
 
-                        {/* Volume Bars */}
-                        <Bar
-                          yAxisId="left"
-                          dataKey="volume"
-                          fill="#27272a"
-                          opacity={0.5}
-                          barSize={4}
-                        />
-
                         {/* Price Area */}
                         <Area
-                          yAxisId="right"
                           type="monotone"
                           dataKey="price"
                           stroke="#f97316"
@@ -217,7 +192,7 @@ export default function BotDashboard() {
                           fill="url(#colorPrice)"
                           isAnimationActive={false}
                         />
-                      </ComposedChart>
+                      </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>

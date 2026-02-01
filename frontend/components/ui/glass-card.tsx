@@ -17,13 +17,10 @@ export function GlassCard({ children, className, title }: GlassCardProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className={cn(
-                "relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl",
+                "relative overflow-hidden rounded-2xl border border-zinc-800 bg-[#121214]",
                 className
             )}
         >
-            {/* Glossy Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-
             {/* Content */}
             <div className="relative p-6 z-10">
                 {title && (
