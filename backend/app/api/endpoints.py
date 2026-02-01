@@ -138,6 +138,7 @@ async def get_active_trades():
     from app.services.trade_executor import TradeExecutor
     from app.db.session import AsyncSessionLocal
     from app.db.models import SystemConfig
+    from sqlalchemy import select
     
     # Get Active Pair from Config
     symbol = "BTCUSDT"

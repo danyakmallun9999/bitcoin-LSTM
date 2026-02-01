@@ -133,7 +133,7 @@ export default function TerminalPage() {
                         {logs.length === 0 && (
                             <div className="text-gray-700 italic text-xs pt-4">Waiting for system logs...</div>
                         )}
-                        {logs.slice().map((log, i) => (
+                        {logs.slice(0, 15).reverse().map((log, i) => (
                             <div key={i} className="flex gap-3 group hover:bg-[#151515]">
                                 <span className="text-gray-600 shrink-0 select-none text-[11px] pt-[2px]">{log.time}</span>
                                 <span className={`break-all ${log.type === 'success' ? 'text-green-500' : log.type === 'info' ? 'text-blue-400' : log.type === 'error' ? 'text-red-500' : log.type === 'user' ? 'text-orange-500 font-bold' : 'text-gray-300'}`}>

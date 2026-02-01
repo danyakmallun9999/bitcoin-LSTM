@@ -260,7 +260,7 @@ export default function BotDashboard() {
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2 z-10">
-                {logs.slice().reverse().map((log, i) => (
+                {logs.slice(0, 15).reverse().map((log, i) => (
                   <div key={i} className="flex gap-3 group">
                     <span className="text-gray-600 shrink-0 select-none text-[10px] font-light font-nums pt-0.5">{log.time}</span>
                     <span className={`break-words font-light font-nums text-[11px] leading-relaxed ${log.type === 'success' ? 'text-green-500' : log.type === 'info' ? 'text-blue-400' : log.type === 'dim' ? 'text-gray-600' : 'text-gray-400'}`}>

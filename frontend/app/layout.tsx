@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Dosis, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { MarketProvider } from "@/context/MarketContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const dosis = Dosis({
+  variable: "--font-dosis",
   subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
@@ -26,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-[#141414] text-gray-200 selection:bg-orange-500 selection:text-white font-light">
+      <body className={`${dosis.variable} ${jetbrainsMono.variable} antialiased bg-[#141414] text-gray-200 selection:bg-orange-500 selection:text-white font-light`}>
         <MarketProvider>
           {/* Sidebar and Main Layout Structure matching reference App shell */}
           <div className="min-h-screen flex font-sans">
