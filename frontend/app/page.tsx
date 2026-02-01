@@ -55,8 +55,8 @@ export default function BotDashboard() {
           <div className="relative z-10 grid grid-cols-12 gap-6">
 
             {/* Main Chart Section */}
-            <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
-              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md overflow-hidden relative min-h-[400px]">
+            <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 h-full">
+              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md overflow-hidden relative min-h-[520px] h-full flex flex-col">
                 <div className="p-6 flex justify-between items-start z-10 relative">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
@@ -84,7 +84,7 @@ export default function BotDashboard() {
                     ))}
                   </div>
                 </div>
-                <div className="h-[300px] w-full px-2 pb-2 relative z-10">
+                <div className="flex-1 w-full px-2 pb-2 relative z-10 min-h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={history}>
                       <defs>
@@ -119,10 +119,10 @@ export default function BotDashboard() {
             </div>
 
             {/* Right Column: Control Deck & LSTM */}
-            <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+            <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 h-full">
 
               {/* RESTORED: Control Deck (System Control) */}
-              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 relative overflow-hidden">
+              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6 relative overflow-hidden flex-1 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-6 relative z-10">
                   <h3 className="text-gray-200 font-semibold text-sm flex items-center gap-2 uppercase tracking-wider">
                     <Zap size={16} className="text-orange-500" /> Control Deck
@@ -143,31 +143,33 @@ export default function BotDashboard() {
                   </div>
                 </div>
 
-                <button
-                  onClick={toggleBot}
-                  className={`w-full py-4 rounded-sm font-bold text-xs uppercase tracking-widest transition-all relative overflow-hidden group 
-                    ${isRunning
-                      ? 'bg-[#252525] border border-red-500/30 text-red-500 hover:bg-red-950/20 hover:border-red-500/50'
-                      : 'bg-orange-600 hover:bg-orange-500 text-black border border-orange-700'
-                    }`}
-                >
-                  {isRunning ? "TERMINATE SYSTEM" : "ENGAGE SYSTEM"}
-                </button>
+                <div className="flex-1 flex flex-col justify-end">
+                  <button
+                    onClick={toggleBot}
+                    className={`w-full py-4 rounded-sm font-bold text-xs uppercase tracking-widest transition-all relative overflow-hidden group 
+                        ${isRunning
+                        ? 'bg-[#252525] border border-red-500/30 text-red-500 hover:bg-red-950/20 hover:border-red-500/50'
+                        : 'bg-orange-600 hover:bg-orange-500 text-black border border-orange-700'
+                      }`}
+                  >
+                    {isRunning ? "TERMINATE SYSTEM" : "ENGAGE SYSTEM"}
+                  </button>
 
-                <div className="mt-4 flex justify-between text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                  <span>Uptime: <UptimeCounter startTime={startTime} isRunning={isRunning} /></span>
-                  <span>Status: {isRunning ? 'ACTIVE' : 'IDLE'}</span>
+                  <div className="mt-4 flex justify-between text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                    <span>Uptime: <UptimeCounter startTime={startTime} isRunning={isRunning} /></span>
+                    <span>Status: {isRunning ? 'ACTIVE' : 'IDLE'}</span>
+                  </div>
                 </div>
               </div>
 
               {/* RESTORED: LSTM Prediction Card */}
-              <div className="h-[240px]">
+              <div className="h-[240px] shrink-0">
                 <LSTMPredictionCard indicators={indicators} />
               </div>
             </div>
 
             {/* Active Positions Table */}
-            <div className="col-span-12 lg:col-span-8 bg-[#1e1e1e] border border-[#2a2a2a] rounded-md overflow-hidden p-6 relative">
+            <div className="col-span-12 lg:col-span-8 bg-[#1e1e1e] border border-[#2a2a2a] rounded-md overflow-hidden p-6 relative h-full min-h-[400px]">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex flex-col">
                   <h3 className="font-semibold text-white text-sm uppercase tracking-wider">Active Positions</h3>
@@ -236,7 +238,7 @@ export default function BotDashboard() {
             </div>
 
             {/* Terminal Log Widget */}
-            <div className="col-span-12 lg:col-span-4 bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-4 flex flex-col font-mono text-sm relative overflow-hidden h-full min-h-[300px]">
+            <div className="col-span-12 lg:col-span-4 bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-4 flex flex-col font-mono text-sm relative overflow-hidden h-full min-h-[400px]">
               <div className="absolute -bottom-5 -right-5 text-gray-700 opacity-5 pointer-events-none"><Clock size={100} /></div>
               <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#333] z-10">
                 <span className="flex items-center gap-2 text-gray-400 font-bold uppercase tracking-wider text-[10px] font-sans">

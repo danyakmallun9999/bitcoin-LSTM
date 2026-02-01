@@ -22,10 +22,10 @@ export default function Header({ title }: { title: string }) {
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Total Balance</p>
                     <p className="font-nums font-bold text-2xl text-white tracking-tight">{balanceDisplay}</p>
                 </div>
-                <button className="w-10 h-10 rounded-md bg-[#252525] border border-[#333] flex items-center justify-center text-gray-400 hover:text-orange-500 hover:border-orange-500/30 transition-all relative">
-                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse absolute top-3 right-3"></div>
-                    <Zap size={18} />
-                </button>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#252525] border border-[#333] rounded-sm">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                    <span className="text-[10px] uppercase font-bold text-gray-300 tracking-wider">Binance API: Connected</span>
+                </div>
             </div>
         </header>
     );
