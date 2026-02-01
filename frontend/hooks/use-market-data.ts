@@ -56,10 +56,37 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
             if (message.type === "TICK" && message.data.symbol === symbol) {
                 const tick = message.data as TickData;
                 setPrice(tick.price);
+
                 setHistory((prev) => {
-                    const newHistory = [...prev, tick];
-                    if (newHistory.length > 200) return newHistory.slice(1);
-                    return newHistory;
+                    if (prev.length === 0) return [tick];
+
+                    const lastItem = prev[prev.length - 1];
+                    const lastTime = new Date(lastItem.time).getTime();
+                    const tickTime = new Date(tick.time).getTime();
+
+                    // Milliseconds map
+                    const intervalMap: Record<string, number> = {
+                        '1m': 60 * 1000,
+                        '15m': 15 * 60 * 1000,
+                        '1H': 60 * 60 * 1000,
+                        '4H': 4 * 60 * 60 * 1000
+                    };
+                    // Default to 1m if unknown
+                    const threshold = intervalMap[interval] || 60000;
+
+                    // If tick is within the current interval bucket (approx)
+                    // We assume valid sequential data. If tick is newer but close, update last candle.
+                    // Ideally we'd use robust "start of interval" alignment, but "distance from last" is a good proxy for now.
+                    if (tickTime - lastTime < threshold) {
+                        const newHistory = [...prev];
+                        newHistory[newHistory.length - 1] = tick;
+                        return newHistory;
+                    } else {
+                        // New candle/point
+                        const newHistory = [...prev, tick];
+                        if (newHistory.length > 200) return newHistory.slice(1);
+                        return newHistory;
+                    }
                 });
             }
 
@@ -75,7 +102,7 @@ export const useMarketData = (symbol: string = "BTCUSDT", interval: string = "1m
                 setIndicators(message.data);
             }
         }
-    }, [lastJsonMessage, symbol]);
+    }, [lastJsonMessage, symbol, interval]);
 
     const connectionStatus = {
         [ReadyState.CONNECTING]: 'Connecting',
