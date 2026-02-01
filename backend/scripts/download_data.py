@@ -8,9 +8,9 @@ from datetime import datetime, timedelta
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 
 from app.services.binance_client import binance_adapter
-from binance.client import AsyncClient
+from binance import AsyncClient
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "../../database/data/historical")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "../data/historical")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 async def download_historical_data(symbol: str, interval: str, start_str: str, end_str: str = None):
