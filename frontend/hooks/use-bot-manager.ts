@@ -12,8 +12,10 @@ export interface BotStats {
 
 export interface AccountBalance {
     total_balance: number;
+    currency: string;
     pnl_24h: number;
     pnl_amount: number;
+    invested_amount: number;
 }
 
 export interface ActiveTrade {

@@ -206,16 +206,24 @@ export default function BotDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm font-light">
                     <span className="text-zinc-500">Invested Amount</span>
-                    <span className="font-nums text-zinc-200 text-lg font-medium">1,000.00 EUR</span>
+                    <span className="font-nums text-zinc-200 text-lg font-medium">
+                      ${balance?.invested_amount?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "0.00"}
+                    </span>
                   </div>
-                  <div className="w-full bg-zinc-900 h-2 rounded-full overflow-hidden">
-                    <div className="bg-orange-500 h-full rounded-full" style={{ width: '65%' }}></div>
+                  {/* Progress Bar: % Invested vs Cash */}
+                  <div className="w-full bg-zinc-900 h-2 rounded-full overflow-hidden flex">
+                    <div
+                      className="bg-orange-500 h-full rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(((balance?.invested_amount || 0) / (balance?.total_balance || 1)) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-[11px] text-zinc-600">
+                    <span>In Position</span>
+                    <span>Cash Available: ${((balance?.total_balance || 0) - (balance?.invested_amount || 0)).toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
                   </div>
                 </div>
 
-                <button className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-black font-semibold text-lg py-3 rounded-sm transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wide">
-                  Transfer Funds
-                </button>
+                {/* Removed Transfer Funds Button (Not needed for auto-bot) */}
               </div>
 
               {/* Bot Controls */}
@@ -247,6 +255,12 @@ export default function BotDashboard() {
                     <> <Play size={16} fill="currentColor" /> START ENGINE </>
                   )}
                 </button>
+
+                <div className="flex items-center gap-2 my-3 opacity-60">
+                  <div className="h-px bg-zinc-800 flex-1"></div>
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-semibold">Manual Override</span>
+                  <div className="h-px bg-zinc-800 flex-1"></div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <button
