@@ -30,12 +30,73 @@ class MarketDataService:
         socket = bm.kline_socket(symbol=symbol, interval=interval)
 
         async with socket as tscm:
+            from datetime import datetime
+            from app.db.session import AsyncSessionLocal
+            from app.db.models import MarketTicket
+            from app.schemas.market_data import KlineData
+            from app.strategy.registry import strategy_registry
+
             while True:
                 res = await tscm.recv()
-                if res:
-                    # Transform raw data to internal schema if needed (or pass raw)
-                    # For now passing raw to callback
-                    await callback(res)
+                if res and 'k' in res:
+                    kline = res['k']
+                    
+                    # 1. Parse Data
+                    data_point = KlineData(
+                        symbol=res['s'],
+                        interval=kline['i'],
+                        open_time=datetime.fromtimestamp(kline['t'] / 1000),
+                        open_price=float(kline['o']),
+                        high_price=float(kline['h']),
+                        low_price=float(kline['l']),
+                        close_price=float(kline['c']),
+                        volume=float(kline['v']),
+                        close_time=datetime.fromtimestamp(kline['T'] / 1000),
+                        is_closed=kline['x']
+                    )
+
+                    # 2. Save to DB (Upsert to avoid duplicates)
+                    from sqlalchemy.dialects.postgresql import insert
+                    
+                    async with AsyncSessionLocal() as session:
+                        stmt = insert(MarketTicket).values(
+                            time=data_point.close_time,
+                            symbol=data_point.symbol,
+                            price=data_point.close_price,
+                            volume=data_point.volume,
+                            open=data_point.open_price,
+                            high=data_point.high_price,
+                            low=data_point.low_price,
+                            close=data_point.close_price
+                        )
+                        
+                        # UPDATE if exists (Upsert)
+                        stmt = stmt.on_conflict_do_update(
+                            index_elements=['time', 'symbol'],
+                            set_={
+                                'price': stmt.excluded.price,
+                                'volume': stmt.excluded.volume,
+                                'open': stmt.excluded.open,
+                                'high': stmt.excluded.high,
+                                'low': stmt.excluded.low,
+                                'close': stmt.excluded.close
+                            }
+                        )
+                        
+                        await session.execute(stmt)
+                        await session.commit()
+
+                    # 3. Feed to Strategies
+                    # In real app, we iterate over active strategies subscribed to this symbol
+                    # For now, we just broadcast to all for testing
+                    # Note: We usually only trade on 'Closed' candles to avoid repainting
+                    if data_point.is_closed:
+                        # Iterate all running strategies (simplified)
+                        # In reality, strategies are instances in the registry
+                        # For this demo, let's assume we have a way to get instances
+                        pass 
+                    
+                    await callback(data_point)
 
     async def ingest_realtime_data(self):
         """
