@@ -111,7 +111,29 @@ npm run dev
 
 Frontend akan dapat diakses di `http://localhost:3000`.
 
+## Fitur Saat Ini
+
+Sistem saat ini memiliki kapabilitas sebagai berikut:
+
+*   **Dashboard Real-time**: Visualisasi pergerakan harga dan indikator teknikal secara langsung menggunakan WebSocket.
+*   **AI-Driven Strategy**: Implementasi strategi trading berbasis **LSTM (Long Short-Term Memory)** untuk memprediksi tren pasar.
+*   **Backtesting Engine**: Modul simulasi untuk menguji performa strategi menggunakan data historis sebelum digunakan secara live.
+*   **Manajemen Aset**: Pemantauan saldo, alokasi aset, dan estimasi PnL (Profit and Loss) secara real-time.
+*   **Sistem Event-Driven**: Arsitektur yang responsif terhadap setiap perubahan data pasar (tick-by-tick).
+
+## Roadmap (Rencana Pengembangan)
+
+Kami terus mengembangkan sistem ini. Berikut adalah fitur yang direncanakan untuk masa depan:
+
+*   **Multi-Exchange Support**: Menambahkan integrasi dengan bursa lain seperti Coinbase, Kraken, dan Bybit.
+*   **Advanced AI Models**: Eksperimen dengan arsitektur **Transformer** dan **Reinforcement Learning (RL)** untuk pengambilan keputusan yang lebih adaptif.
+*   **Live Trading Execution**: Transisi dari paper trading ke eksekusi order otomatis di mainnet dengan manajemen risiko yang ketat.
+*   **Notifikasi Cerdas**: Integrasi bot Telegram/Discord untuk mengirimkan sinyal trading dan laporan kinerja harian.
+*   **User Authentication**: Sistem login aman untuk mendukung multi-user dan preferensi personal.
+*   **Mobile App Support**: Pengembangan aplikasi mobile (React Native) untuk pemantauan portofolio saat bepergian.
+
 ## Struktur Proyek
+
 
 Berikut adalah gambaran singkat struktur folder proyek:
 
