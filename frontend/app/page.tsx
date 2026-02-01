@@ -173,7 +173,7 @@ export default function BotDashboard() {
               <div className="flex justify-between items-center mb-6">
                 <div className="flex flex-col">
                   <h3 className="font-semibold text-white text-sm uppercase tracking-wider">Active Positions</h3>
-                  <p className="text-[10px] text-gray-500 font-nums">Last update: {new Date().toLocaleTimeString()}</p>
+                  <p suppressHydrationWarning className="text-[10px] text-gray-500 font-nums">Last update: {new Date().toLocaleTimeString()}</p>
                 </div>
                 <button className="text-gray-500 hover:text-white transition-colors">
                   <MoreHorizontal size={20} />

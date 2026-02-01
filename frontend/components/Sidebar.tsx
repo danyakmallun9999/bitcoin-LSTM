@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     Activity,
@@ -18,8 +19,9 @@ export default function Sidebar() {
     return (
         <aside className="fixed left-0 top-0 h-full w-20 border-r border-[#2a2a2a] flex flex-col items-center py-8 bg-[#1a1a1a] z-50">
             {/* Logo */}
-            <div className="mb-10 cursor-pointer">
-                <div className="w-10 h-10 bg-[#252525] rounded-md flex items-center justify-center text-orange-500 font-bold text-xl border border-[#333]">B</div>
+            <div className="mb-10 cursor-pointer hover:opacity-80 transition-opacity">
+                {/* Using standard img tag to ensure immediate visibility without Next.js optimization complexity */}
+                <img src="/bitcoin-btc-logo.png" alt="Bitcoin Logo" className="w-10 h-10 object-contain" />
             </div>
 
             {/* Navigation */}

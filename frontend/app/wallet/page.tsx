@@ -9,16 +9,42 @@ import { Wallet as WalletIcon, TrendingUp, PieChart as PieIcon, ArrowUpRight, Do
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 export default function WalletPage() {
-    const { balance } = useGlobalState();
+    const { balance, activeTrades = [], stats } = useGlobalState();
 
-    // Mock asset distribution (since backend only does 1 active pair currently)
-    // In future this would come from `activeTrades` or specific wallet endpoint
+    // Calculate dynamic values
+    const totalBalance = balance?.total_balance || 0;
+    const investedAmount = balance?.invested_amount || 0;
+    const cash = Math.max(0, totalBalance - investedAmount);
+
+    // Construct Assets Distribution
     const assets = [
-        { coin: "USDT", name: "Tether", amount: balance?.cash || 0, color: "bg-green-500" },
-        { coin: "BTC", name: "Bitcoin", amount: balance?.invested_amount || 0, color: "bg-orange-500" }
+        { coin: "USDT", name: "Tether (Cash)", amount: cash, color: "bg-green-500" }
     ];
 
-    const total = (balance?.cash || 0) + (balance?.invested_amount || 0);
+    // Add active positions to assets
+    if (activeTrades.length > 0) {
+        // Group by pair base asset (e.g. BTC from BTC/USDT)
+        const positionMap = new Map();
+        activeTrades.forEach(trade => {
+            const base = trade.pair.split('/')[0];
+            const currentVal = (positionMap.get(base) || 0) + (investedAmount / activeTrades.length); // Approximation if individual trade size unknown
+            positionMap.set(base, currentVal);
+        });
+
+        positionMap.forEach((val, key) => {
+            assets.push({
+                coin: key,
+                name: key === 'BTC' ? 'Bitcoin' : key,
+                amount: val,
+                color: "bg-orange-500"
+            });
+        });
+    } else if (investedAmount > 0) {
+        // Fallback if activeTrades empty but investedAmount exists
+        assets.push({ coin: "POSITIONS", name: "Active Trades", amount: investedAmount, color: "bg-orange-500" });
+    }
+
+    const total = totalBalance; // Should match sum of assets roughly
 
     return (
         <div className="flex flex-col w-full min-h-screen">
@@ -105,7 +131,7 @@ export default function WalletPage() {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-white font-bold font-nums text-sm">${asset.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                                                    <p className="text-white font-bold font-nums text-sm">${asset.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                                                     <p className="text-gray-500 text-[10px] font-nums">{percent.toFixed(1)}%</p>
                                                 </div>
                                             </motion.div>
@@ -126,10 +152,12 @@ export default function WalletPage() {
                                     <div className="bg-green-500/10 p-2 rounded-sm text-green-500 border border-green-500/20">
                                         <DollarSign size={16} />
                                     </div>
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-wide">Realized Profit</p>
+                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-wide">24h PnL</p>
                                 </div>
-                                <p className="text-2xl font-bold text-white font-nums">$0.00</p>
-                                <p className="text-gray-600 text-[10px] mt-1">Total profit from closed trades</p>
+                                <p className={`text-2xl font-bold font-nums ${balance?.pnl_amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    {balance?.pnl_amount >= 0 ? '+' : ''}{balance?.pnl_amount?.toLocaleString() || "0.00"} <span className="text-sm text-gray-500">USDT</span>
+                                </p>
+                                <p className="text-gray-600 text-[10px] mt-1">Daily profit/loss amount</p>
                             </div>
 
                             <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-md p-6">
@@ -139,11 +167,10 @@ export default function WalletPage() {
                                     </div>
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-wide">Buying Power</p>
                                 </div>
-                                <p className="text-2xl font-bold text-white font-nums">${(balance?.cash || 0).toLocaleString()}</p>
+                                <p className="text-2xl font-bold text-white font-nums">${cash.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                                 <p className="text-gray-600 text-[10px] mt-1">Available for new positions</p>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
