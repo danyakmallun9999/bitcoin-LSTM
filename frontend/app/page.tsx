@@ -5,6 +5,7 @@ import { useGlobalState } from "@/context/MarketContext";
 import Header from "@/components/Header";
 import PageTransition from "@/components/PageTransition";
 import LSTMPredictionCard from "@/components/LSTMPredictionCard";
+import UptimeCounter from "@/components/UptimeCounter";
 import {
   Activity,
   Play,
@@ -36,7 +37,7 @@ export default function BotDashboard() {
   const {
     price, history, logs, latestSignal, indicators,
     isRunning, stats, balance, activeTrades, toggleBot,
-    timeframe, setTimeframe
+    timeframe, setTimeframe, startTime
   } = useGlobalState();
 
   const [notification, setNotification] = useState<any>(null);
@@ -318,7 +319,7 @@ export default function BotDashboard() {
                 </button>
 
                 <div className="mt-6 flex justify-between text-xs text-zinc-500 font-medium">
-                  <span>Uptime: {stats?.uptime || '0h 0m'}</span>
+                  <span>Uptime: <UptimeCounter startTime={startTime} isRunning={isRunning} /></span>
                   <span>Auto-Trading: {isRunning ? 'ON' : 'OFF'}</span>
                 </div>
               </motion.div>

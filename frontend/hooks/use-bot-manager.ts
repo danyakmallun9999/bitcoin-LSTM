@@ -8,6 +8,7 @@ export interface BotStats {
     avg_pnl: number;
     sharpe: number;
     uptime: string;
+    start_time?: string;
 }
 
 export interface AccountBalance {
@@ -30,6 +31,7 @@ export interface ActiveTrade {
 
 export const useBotManager = () => {
     const [isRunning, setIsRunning] = useState(true);
+    const [startTime, setStartTime] = useState<string | null>(null);
     const [stats, setStats] = useState<BotStats | null>(null);
     const [balance, setBalance] = useState<AccountBalance | null>(null);
     const [activeTrades, setActiveTrades] = useState<ActiveTrade[]>([]);
@@ -56,6 +58,8 @@ export const useBotManager = () => {
             const res = await fetch(`${API_BASE}/bot/status`);
             const data = await res.json();
             setIsRunning(data.status === 'running');
+            if (data.start_time) setStartTime(data.start_time);
+            else setStartTime(null);
         } catch (e) {
             console.error("Failed to fetch status", e);
         }
@@ -101,6 +105,7 @@ export const useBotManager = () => {
 
     return {
         isRunning,
+        startTime,
         stats,
         balance,
         activeTrades,

@@ -21,6 +21,7 @@ interface MarketContextType {
     balance: any;
     activeTrades: any[];
     toggleBot: () => void;
+    startTime: string | null;
 }
 
 const MarketContext = createContext<MarketContextType | undefined>(undefined);
@@ -36,7 +37,8 @@ export function MarketProvider({ children }: { children: ReactNode }) {
         timeframe,
         setTimeframe,
         ...marketData,
-        ...botManager
+        ...botManager,
+        startTime: botManager.startTime
     };
 
     return (
